@@ -1,0 +1,16 @@
+# Build output
+/build/
+/bin/
+/obj/
+/*.o
+/*.exe
+/*.out
+# IDE files
+.vscode/
+.idea/
+# OS metadata
+.DS_Store
+# Large binary art assets — keep them in Git-LFS instead
+*.fbx
+*.gltf
+*.glb
