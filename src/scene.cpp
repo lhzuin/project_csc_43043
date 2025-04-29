@@ -60,7 +60,7 @@ void scene_structure::initialize()
 	tree.model.rotation = rotation_transform::from_axis_angle({ 1,0,0 }, Pi / 2.0f);
 	tree.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/palm_tree/palm_tree.jpg", GL_REPEAT, GL_REPEAT);
 
-	turtle.initialize_data_on_gpu(mesh_load_file_gltf(project::path + "assets/sea_turtle.glb"));
+	turtle.initialize_data_on_gpu(mesh_load_file_gltf(project::path + "assets/sea_turtle/sea_turtle.glb"));
 	
 	// glTF files are +Y-up, right-handed.  
 	// If your engine’s world is +Z-up (like the previous OBJ palm-tree setup),
