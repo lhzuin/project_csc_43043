@@ -3,6 +3,7 @@
 
 #include "cgp/cgp.hpp"
 #include "environment.hpp"
+#include "gltf_loader.hpp"
 
 // This definitions allow to use the structures: mesh, mesh_drawable, etc. without mentionning explicitly cgp::
 using cgp::mesh;
@@ -10,6 +11,7 @@ using cgp::mesh_drawable;
 using cgp::vec3;
 using cgp::numarray;
 using cgp::timer_basic;
+
 
 // Variables associated to the GUI (buttons, etc)
 struct gui_parameters {
@@ -41,6 +43,7 @@ struct scene_structure : cgp::scene_inputs_generic {
 	mesh_drawable terrain;
 	mesh_drawable water;
 	mesh_drawable tree;
+	mesh_drawable turtle;
 	mesh_drawable cube1;
 	mesh_drawable cube2;
 
