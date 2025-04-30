@@ -59,15 +59,22 @@ void scene_structure::initialize()
 	tree.initialize_data_on_gpu(mesh_load_file_obj(project::path + "assets/palm_tree/palm_tree.obj"));
 	tree.model.rotation = rotation_transform::from_axis_angle({ 1,0,0 }, Pi / 2.0f);
 	tree.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/palm_tree/palm_tree.jpg", GL_REPEAT, GL_REPEAT);
+		
 
 	gltf_geometry_and_texture turtle_data = mesh_load_file_gltf(
         project::path + "assets/sea_turtle/sea_turtle.gltf");
 
-	/* 1. send the geometry to the GPU */
-	turtle.initialize_data_on_gpu(turtle_data.geom);
+	opengl_shader_structure turtle_shader;
+	turtle_shader.load(
+		project::path + "shaders/turtle/turtle.vert.glsl",
+		project::path + "shaders/mesh/mesh.frag.glsl");
+	
+	/* Send the geometry to the GPU, set shader and assign texture */
+	turtle.initialize_data_on_gpu(
+        turtle_data.geom,          // geometry
+        turtle_shader,             // <-- keep custom shader!
+        turtle_data.tex); 
 
-	/* 2. assign the texture */
-	turtle.texture = turtle_data.tex;
 	// glTF files are +Y-up, right-handed.  
 	// rotate −90 ° around X to lie the turtle flat in X-Z.
 	turtle.model.rotation =
@@ -91,8 +98,16 @@ void scene_structure::display_frame()
 	// Set the light to the current position of the camera
 	environment.light = camera_control.camera_model.position();
 
-	// Update time
+	// advance clock
 	timer.update();
+
+	/* --- procedural-flap uniforms ------------------------------------ */
+	environment.uniform_generic.uniform_float["uTime"]      = timer.t;
+	environment.uniform_generic.uniform_float["uPivotX"]    = 0.6f;  
+	environment.uniform_generic.uniform_float["uRange"]     = 0.4f;
+	environment.uniform_generic.uniform_float["uAmplitude"] = 0.6f;
+	environment.uniform_generic.uniform_float["uFreq"]      = 2.5f;
+	/* ----------------------------------------------------------------- */
 
 	// conditional display of the global frame (set via the GUI)
 	if (gui.display_frame)
