@@ -1,47 +1,49 @@
 #version 330 core
-layout(location = 0) in vec3  vertex_position;
-layout(location = 1) in vec3  vertex_normal;
-layout(location = 2) in vec3  vertex_color;        // not used, but keep it
-layout(location = 3) in vec2  vertex_uv;
+/* ────────────── vertex attributes coming from the VAO ────────────── */
+layout(location = 0) in vec3  vertex_position;   // POSITION
+layout(location = 1) in vec3  vertex_normal;     // NORMAL
+layout(location = 2) in vec3  vertex_color;      // COLOR_0   (optional)
+layout(location = 3) in vec2  vertex_uv;         // TEXCOORD_0
+layout(location = 4) in uvec4 vertex_joint;      // JOINTS_0  (added)
+layout(location = 5) in vec4  vertex_weight;     // WEIGHTS_0 (added)
 
-uniform mat4  model;
-uniform mat4  view;
-uniform mat4  projection;
+/* ────────────── standard CGP uniforms ─────────────────────────────── */
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
 
-uniform float uTime;
+/* ────────────── skinning matrices (filled from C++) ───────────────── */
+uniform mat4 uBones[64];
 
-uniform float uPivotX   = 0.6;
-uniform float uRange    = 0.4;
-uniform float uAmplitude= 0.6;
-uniform float uFreq     = 2.5;
-
-out struct fragment_data {
-    vec3 position;
-    vec3 normal;
-    vec3 color;
-    vec2 uv;
+/* ────────────── data sent to the fragment shader ──────────────────── */
+out struct fragment_data
+{
+    vec3 position;   // world space
+    vec3 normal;     // world space
+    vec3 color;      // vertex colour
+    vec2 uv;         // texture coordinates
 } fragment;
 
-vec3 flap(vec3 p)
-{
-    float w = clamp(1.0 - abs(p.x - uPivotX)/uRange, 0.0, 1.0);
-    float angle = uAmplitude * w * sin(uFreq * uTime) * sign(p.x - uPivotX);
-    mat2 R = mat2(cos(angle), -sin(angle),
-                  sin(angle),  cos(angle));
-    vec2 yz = R * vec2(p.y, p.z);
-    return vec3(p.x, yz.x, yz.y);
-}
-
+/* -------------------------------------------------------------------- */
 void main()
 {
-    vec3 pos = flap(vertex_position);
-    vec3 nor = flap(vertex_position + vertex_normal) - flap(vertex_position);
+    /* --------- linear-blend skinning --------------------------------- */
+    mat4 skin =
+          vertex_weight.x * uBones[int(vertex_joint.x)] +
+          vertex_weight.y * uBones[int(vertex_joint.y)] +
+          vertex_weight.z * uBones[int(vertex_joint.z)] +
+          vertex_weight.w * uBones[int(vertex_joint.w)];
 
-    vec4 Pworld = model * vec4(pos,1.0);
+    vec4 Pskinned = skin * vec4(vertex_position, 1.0);
+    vec3 Nskinned = mat3(skin) * vertex_normal;
+
+    /* --------- to world space, then to clip space -------------------- */
+    vec4 Pworld = model * Pskinned;
     gl_Position = projection * view * Pworld;
 
+    /* --------- pass to fragment shader ------------------------------- */
     fragment.position = Pworld.xyz;
-    fragment.normal   = normalize(mat3(model) * nor);
-    fragment.color    = vec3(1.0);        // or vertex_color if you wish
-    fragment.uv       = vertex_uv;        // now the real UVs
+    fragment.normal   = normalize(mat3(model) * Nskinned);
+    fragment.color    = vertex_color;          // keep original colour
+    fragment.uv       = vertex_uv;
 }

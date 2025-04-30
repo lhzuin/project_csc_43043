@@ -74,11 +74,27 @@ void scene_structure::initialize()
         turtle_data.geom,          // geometry
         turtle_shader,             // <-- keep custom shader!
         turtle_data.tex); 
+	
+	turtle.model.rotation = rotation_transform::from_axis_angle({1, 0, 0}, Pi / 2.0f);
+	//turtle.model.rotation = rotation_transform::from_axis_angle({0, 1, 0}, Pi);
+	vec3 position = {0.2f, 0.4f, 0.5f};
+	turtle.model.translation = position;
+	
+	/* ---- add JOINTS_0 / WEIGHTS_0 to the VAO ----------------- */
+	add_skin_attributes(turtle,
+		turtle_data.joint_index,
+		turtle_data.joint_weight);
+
+	/* ---- keep inverse-bind & joint-node for later ------------ */
+	inverse_bind  = std::move(turtle_data.inverse_bind);   // store as scene members
+	joint_node    = std::move(turtle_data.joint_node);
 
 	// glTF files are +Y-up, right-handed.  
 	// rotate −90 ° around X to lie the turtle flat in X-Z.
-	turtle.model.rotation =
-		rotation_transform::from_axis_angle({1, 0, 0}, -Pi / 2.0f);
+	
+
+	uBones.resize(inverse_bind.size());
+	
 
 	cube1.initialize_data_on_gpu(mesh_primitive_cube({ 0,0,0 }, 0.5f));
 	cube1.model.rotation = rotation_transform::from_axis_angle({ -1,1,0 }, Pi / 7.0f);
@@ -87,9 +103,13 @@ void scene_structure::initialize()
 
 	cube2 = cube1;
 
+
 }
 
-
+const int RF[] = {  2,  3,  4,  5};          // right-front
+const int RR[] = {  6,  7,  8,  9};          // right-rear
+const int LF[] = { 10, 11, 12, 13};          // left-front
+const int LR[] = { 14, 15, 16, 17};          // left-rear
 // This function is called permanently at every new frame
 // Note that you should avoid having costly computation and large allocation defined there. This function is mostly used to call the draw() functions on pre-existing data.
 void scene_structure::display_frame()
@@ -101,13 +121,50 @@ void scene_structure::display_frame()
 	// advance clock
 	timer.update();
 
-	/* --- procedural-flap uniforms ------------------------------------ */
-	environment.uniform_generic.uniform_float["uTime"]      = timer.t;
-	environment.uniform_generic.uniform_float["uPivotX"]    = 0.6f;  
-	environment.uniform_generic.uniform_float["uRange"]     = 0.4f;
-	environment.uniform_generic.uniform_float["uAmplitude"] = 0.6f;
-	environment.uniform_generic.uniform_float["uFreq"]      = 2.5f;
-	/* ----------------------------------------------------------------- */
+	/* ----- build skin matrices each frame -------------------- */
+	float t = timer.t;
+	/* ------------ flap angles -------------------------------------- */
+    float aFront = 0.1f * std::sin( 2.0f * timer.t );        // front pair
+    float aRear  = 0.1f * std::sin( 2.0f * timer.t + cgp::Pi ); // rear 180°
+
+    /* ------------ build the 24 skin matrices ----------------------- */
+    for (size_t j = 0; j < uBones.size(); ++j)
+    {
+        mat4 bind = inverse( inverse_bind[j] );          // rest-pose
+        mat4 M    = bind;                                // default
+
+        /* ---- does this joint belong to a flipper? ----------------- */
+        auto rotate_if_in = [&](const int* list, float ang)
+        {
+            for(int k=0;k<4;++k) if(j==list[k])
+            {
+                /* rotate around local +Z (up/out of the shell plane) */
+                mat4 R = affine_rt(
+                           rotation_transform::from_axis_angle({0,0,1}, ang),
+                           {0,0,0}).matrix();
+                M = bind * R;                            // hinge at joint
+            }
+        };
+
+        rotate_if_in(RF, aFront);
+        rotate_if_in(LF, aFront);
+        rotate_if_in(RR, aRear );
+        rotate_if_in(LR, aRear );
+
+        uBones[j] = M * inverse_bind[j];
+    }
+
+    /* ------------ upload to the *turtle* shader only --------------- */
+    glUseProgram( turtle.shader.id );
+    for (size_t j = 0; j < uBones.size(); ++j)
+    {
+        std::string n = "uBones[" + std::to_string(j) + "]";
+        GLint loc = glGetUniformLocation(turtle.shader.id, n.c_str());
+        if (loc >= 0)
+            glUniformMatrix4fv(loc,1,GL_FALSE,&uBones[j](0,0));
+    }
+    glUseProgram( 0 );
+
 
 	// conditional display of the global frame (set via the GUI)
 	if (gui.display_frame)

@@ -4,6 +4,7 @@
 #include "cgp/cgp.hpp"
 #include "environment.hpp"
 #include "gltf_loader.hpp"
+#include "gpu_skin_helper.hpp" 
 
 // This definitions allow to use the structures: mesh, mesh_drawable, etc. without mentionning explicitly cgp::
 using cgp::mesh;
@@ -33,6 +34,10 @@ struct scene_structure : cgp::scene_inputs_generic {
 	environment_structure environment;   // Standard environment controler
 	input_devices inputs;                // Storage for inputs status (mouse, keyboard, window dimension)
 	gui_parameters gui;                  // Standard GUI element storage
+
+	std::vector<cgp::mat4> inverse_bind;
+	std::vector<int>       joint_node;     // skin -> node
+	std::vector<cgp::mat4> uBones; 
 	
 	// ****************************** //
 	// Elements and shapes of the scene

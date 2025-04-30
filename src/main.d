@@ -165,7 +165,7 @@ src//main.o: src//main.cpp ../../cgp/library/cgp/cgp.hpp \
   ../../cgp/library/cgp/21_scene_project_helper/scene_project_helper.hpp \
   ../../cgp/library/cgp/21_scene_project_helper/path/path.hpp \
   src/environment.hpp src/scene.hpp src/gltf_loader.hpp \
-  external/tinygltf/tiny_gltf.h
+  external/tinygltf/tiny_gltf.h src/gpu_skin_helper.hpp
 ../../cgp/library/cgp/cgp.hpp:
 ../../cgp/library/cgp/cgp_parameters.hpp:
 ../../cgp/library/cgp/01_base/base.hpp:
@@ -336,3 +336,4 @@ src/environment.hpp:
 src/scene.hpp:
 src/gltf_loader.hpp:
 external/tinygltf/tiny_gltf.h:
+src/gpu_skin_helper.hpp:

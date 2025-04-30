@@ -47,6 +47,8 @@ static void upload_texture_from_gltf(const tinygltf::Image& img,
 /* -------------------------------------------------------------------------- */
 /*  mesh_load_file_gltf - minimal loader that fills a cgp::mesh               */
 /* -------------------------------------------------------------------------- */
+/* convert 16 consecutive floats (column-major) to a cgp::mat4 */
+static cgp::mat4 make_mat4(const float* m);
 gltf_geometry_and_texture mesh_load_file_gltf(const std::string& filename)
 {
     tinygltf::TinyGLTF loader;
@@ -109,12 +111,52 @@ gltf_geometry_and_texture mesh_load_file_gltf(const std::string& filename)
             dst[i] = { f[2*i], f[2*i+1] };
     };
 
+    auto copy_uint4 = [&](const std::string& attr,
+            cgp::numarray<cgp::uint4>& dst)
+    {
+        auto it = prim.attributes.find(attr);
+        if (it == prim.attributes.end()) return;
+
+        const auto& acc  = model.accessors[it->second];
+        const auto& view = model.bufferViews[acc.bufferView];
+        const auto& buf  = model.buffers[view.buffer];
+
+        const unsigned char* d = buf.data.data()+view.byteOffset+acc.byteOffset;
+        const uint16_t* u16 = reinterpret_cast<const uint16_t*>(d);
+        const uint8_t * u8  = reinterpret_cast<const uint8_t *> (d);
+
+        dst.resize(acc.count);
+
+        if(acc.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE){
+        for(size_t i=0;i<acc.count;++i)
+        dst[i] = {u8[4*i+0],u8[4*i+1],u8[4*i+2],u8[4*i+3]};
+        }else{ /* assume UNSIGNED_SHORT */
+        for(size_t i=0;i<acc.count;++i)
+        dst[i] = {u16[4*i+0],u16[4*i+1],u16[4*i+2],u16[4*i+3]};
+        }
+    };
+
+    auto copy_vec4f = [&](const std::string& attr,cgp::numarray<cgp::vec4>& dst){ 
+        auto it = prim.attributes.find(attr);
+        if(it==prim.attributes.end()) return;
+        const auto& acc  = model.accessors[it->second];
+        const auto& view = model.bufferViews[acc.bufferView];
+        const auto& buf  = model.buffers[view.buffer];
+        const float* f = reinterpret_cast<const float*>(
+        buf.data.data()+view.byteOffset+acc.byteOffset);
+        dst.resize(acc.count);
+        for(size_t i=0;i<acc.count;++i)
+        dst[i] = {f[4*i],f[4*i+1],f[4*i+2],f[4*i+3]};
+    };
+
     /* -------------------------------------------------------------------------- */
     /*  Use them for each attribute                                               */
     /* -------------------------------------------------------------------------- */
     copy_vec3("POSITION"   , result.geom.position);
     copy_vec3("NORMAL"     , result.geom.normal);
     copy_vec2("TEXCOORD_0" , result.geom.uv);
+    copy_uint4("JOINTS_0" , result.joint_index);
+    copy_vec4f("WEIGHTS_0", result.joint_weight);
 
     /* ---------------------- indices → connectivity ------------------------ */
     if (prim.indices < 0)
@@ -157,10 +199,46 @@ gltf_geometry_and_texture mesh_load_file_gltf(const std::string& filename)
             upload_texture_from_gltf(model.images[imgIndex], cache[imgIndex]);
         result.tex = cache[imgIndex];          // store in the struct, **not** in the mesh
     }
+
+    if(!model.skins.empty()){
+        const tinygltf::Skin& skin = model.skins[0];
+    
+        /* joint → node index list */
+        result.joint_node = skin.joints;            // vector<int>
+    
+        /* inverse bind matrices */
+        const auto& accIBM   = model.accessors[skin.inverseBindMatrices];
+        const auto& viewIBM  = model.bufferViews[accIBM.bufferView];
+        const auto& bufIBM   = model.buffers[viewIBM.buffer];
+        const float*  mdata  = reinterpret_cast<const float*>(
+                bufIBM.data.data() + viewIBM.byteOffset + accIBM.byteOffset);
+    
+        size_t njoint = accIBM.count;
+        result.inverse_bind.resize(njoint);
+        result.inverse_bind.resize(njoint);
+        for(size_t j = 0; j < njoint; ++j)
+            result.inverse_bind[j] = make_mat4(mdata + 16*j);
+    }
     
     result.geom.fill_empty_field();
+    if (!model.skins.empty())
+    {
+        std::cout << "joint  node  name\n";
+        for (size_t j = 0; j < result.joint_node.size(); ++j)
+            std::cout << j << "     "
+                    << result.joint_node[j] << "     "
+                    << model.nodes[ result.joint_node[j] ].name << '\n';
+}
     return result;
 }
 
-
+/* convert 16 consecutive floats (column-major) to a cgp::mat4 */
+static cgp::mat4 make_mat4(const float* m)
+{
+    cgp::mat4 M;
+    for(int col=0; col<4; ++col)
+        for(int row=0; row<4; ++row)
+            M(row,col) = m[4*col + row];   // CGP stores column-major
+    return M;
+}
 
