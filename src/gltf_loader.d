@@ -1,7 +1,5 @@
-src//gltf_loader.o: src//gltf_loader.cpp external/tinygltf/tiny_gltf.h \
-  external/tinygltf/json.hpp external/tinygltf/stb_image.h \
-  external/tinygltf/stb_image_write.h ../../cgp/library/cgp/cgp.hpp \
-  ../../cgp/library/cgp/cgp_parameters.hpp \
+src//gltf_loader.o: src//gltf_loader.cpp src/gltf_loader.hpp \
+  ../../cgp/library/cgp/cgp.hpp ../../cgp/library/cgp/cgp_parameters.hpp \
   ../../cgp/library/cgp/01_base/base.hpp \
   ../../cgp/library/cgp/01_base/error/error.hpp \
   ../../cgp/library/cgp/01_base/basic_types/basic_types.hpp \
@@ -165,11 +163,10 @@ src//gltf_loader.o: src//gltf_loader.cpp external/tinygltf/tiny_gltf.h \
   ../../cgp/library/cgp/20_format_parser/mesh_loader/obj/obj.hpp \
   ../../cgp/library/cgp/20_format_parser/mesh_loader/obj_advanced/obj_advanced.hpp \
   ../../cgp/library/cgp/21_scene_project_helper/scene_project_helper.hpp \
-  ../../cgp/library/cgp/21_scene_project_helper/path/path.hpp
-external/tinygltf/tiny_gltf.h:
-external/tinygltf/json.hpp:
-external/tinygltf/stb_image.h:
-external/tinygltf/stb_image_write.h:
+  ../../cgp/library/cgp/21_scene_project_helper/path/path.hpp \
+  external/tinygltf/tiny_gltf.h external/tinygltf/json.hpp \
+  external/tinygltf/stb_image.h external/tinygltf/stb_image_write.h
+src/gltf_loader.hpp:
 ../../cgp/library/cgp/cgp.hpp:
 ../../cgp/library/cgp/cgp_parameters.hpp:
 ../../cgp/library/cgp/01_base/base.hpp:
@@ -336,3 +333,7 @@ external/tinygltf/stb_image_write.h:
 ../../cgp/library/cgp/20_format_parser/mesh_loader/obj_advanced/obj_advanced.hpp:
 ../../cgp/library/cgp/21_scene_project_helper/scene_project_helper.hpp:
 ../../cgp/library/cgp/21_scene_project_helper/path/path.hpp:
+external/tinygltf/tiny_gltf.h:
+external/tinygltf/json.hpp:
+external/tinygltf/stb_image.h:
+external/tinygltf/stb_image_write.h:

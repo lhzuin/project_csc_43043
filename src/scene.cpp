@@ -60,15 +60,18 @@ void scene_structure::initialize()
 	tree.model.rotation = rotation_transform::from_axis_angle({ 1,0,0 }, Pi / 2.0f);
 	tree.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/palm_tree/palm_tree.jpg", GL_REPEAT, GL_REPEAT);
 
-	turtle.initialize_data_on_gpu(mesh_load_file_gltf(project::path + "assets/sea_turtle/sea_turtle.glb"));
-	
+	gltf_geometry_and_texture turtle_data = mesh_load_file_gltf(
+        project::path + "assets/sea_turtle/sea_turtle.gltf");
+
+	/* 1. send the geometry to the GPU */
+	turtle.initialize_data_on_gpu(turtle_data.geom);
+
+	/* 2. assign the texture */
+	turtle.texture = turtle_data.tex;
 	// glTF files are +Y-up, right-handed.  
-	// If your engine’s world is +Z-up (like the previous OBJ palm-tree setup),
 	// rotate −90 ° around X to lie the turtle flat in X-Z.
 	turtle.model.rotation =
 		rotation_transform::from_axis_angle({1, 0, 0}, -Pi / 2.0f);
-
-	turtle.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/sea_turtle/textures/Tortue_PBRMaterial_baseColor.png", GL_REPEAT, GL_REPEAT);
 
 	cube1.initialize_data_on_gpu(mesh_primitive_cube({ 0,0,0 }, 0.5f));
 	cube1.model.rotation = rotation_transform::from_axis_angle({ -1,1,0 }, Pi / 7.0f);
