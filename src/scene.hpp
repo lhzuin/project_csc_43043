@@ -5,6 +5,7 @@
 #include "environment.hpp"
 #include "gltf_loader.hpp"
 #include "gpu_skin_helper.hpp" 
+#include "skinned_actor.hpp"
 
 // This definitions allow to use the structures: mesh, mesh_drawable, etc. without mentionning explicitly cgp::
 using cgp::mesh;
@@ -33,11 +34,18 @@ struct scene_structure : cgp::scene_inputs_generic {
 	mesh_drawable global_frame;          // The standard global frame
 	environment_structure environment;   // Standard environment controler
 	input_devices inputs;                // Storage for inputs status (mouse, keyboard, window dimension)
-	gui_parameters gui;                  // Standard GUI element storage
+	gui_parameters gui;               // Standard GUI element storage
+	
+	skinned_actor turtle;
+	opengl_shader_structure turtle_shader;
 
-	std::vector<cgp::mat4> inverse_bind;
-	std::vector<int>       joint_node;     // skin -> node
-	std::vector<cgp::mat4> uBones; 
+	skinned_actor shark;
+
+    
+
+	std::vector<cgp::mat4> shark_inverse_bind;
+	std::vector<int>       shark_joint_node;     // skin -> node
+	std::vector<cgp::mat4> shark_uBones; 
 	
 	// ****************************** //
 	// Elements and shapes of the scene
@@ -48,7 +56,8 @@ struct scene_structure : cgp::scene_inputs_generic {
 	mesh_drawable terrain;
 	mesh_drawable water;
 	mesh_drawable tree;
-	mesh_drawable turtle;
+	//turtle turtle_model; 
+	
 	mesh_drawable cube1;
 	mesh_drawable cube2;
 

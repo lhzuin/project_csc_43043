@@ -193,6 +193,7 @@ gltf_geometry_and_texture mesh_load_file_gltf(const std::string& filename)
         const auto& mat = model.materials[prim.material];
         texIndex = mat.pbrMetallicRoughness.baseColorTexture.index;
     }
+
     if (texIndex >= 0) {
         int imgIndex = model.textures[texIndex].source;
         if (!cache.count(imgIndex))
