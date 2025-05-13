@@ -31,6 +31,18 @@ void environment_structure::send_opengl_uniform(opengl_shader_structure const& s
 	opengl_uniform(shader, "fog_color", fog_color, false);
 
 
+	// bind it to texture unit 1
+	if (caustic_array_tex) {
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D_ARRAY, caustic_array_tex);
+		opengl_uniform(shader, "causticMapArray", 1, false);
+	}
+
+	// playback parameters
+	opengl_uniform(shader, "caustic_frame_count", caustic_frame_count, false);
+	opengl_uniform(shader, "caustic_fps",         caustic_fps,         false);
+
+
 	uniform_generic.send_opengl_uniform(shader, expected);
 
 }

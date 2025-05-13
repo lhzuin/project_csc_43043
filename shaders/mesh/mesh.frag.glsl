@@ -35,6 +35,9 @@ uniform mat4 view;       // View matrix (rigid transform) of the camera - to com
 uniform vec3 light; // position of the light
 
 
+uniform vec3 fog_color;
+uniform float fog_d_max;
+
 // Coefficients of phong illumination model
 struct phong_structure {
 	float ambient;      
@@ -123,7 +126,12 @@ void main()
 	float Kd = material.phong.diffuse;
 	float Ks = material.phong.specular;
 	vec3 color_shading = (Ka + Kd * diffuse_component) * color_object + Ks * specular_component * vec3(1.0, 1.0, 1.0);
+
+	// Add Fog
+	float alpha_f = min(length(camera_position - fragment.position)/fog_d_max, 1.0);
+
+	vec3 color_fog = (1-alpha_f)*color_shading + alpha_f*fog_color;
 	
 	// Output color, with the alpha component
-	FragColor = vec4(color_shading, material.alpha * color_image_texture.a);
+	FragColor = vec4(color_fog, material.alpha * color_image_texture.a);
 }
