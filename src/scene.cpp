@@ -31,10 +31,7 @@ void scene_structure::initialize()
 	camera_control.initialize(inputs, window); 
 	camera_control.set_rotation_axis_z(); // camera rotates around z-axis
 	//   look_at(camera_position, targeted_point, up_direction)
-	camera_control.look_at(
-		{ 5.0f, -4.0f, 3.5f } /* position of the camera in the 3D scene */,
-		{0,0,0} /* targeted point in 3D scene */,
-		{0,0,1} /* direction of the "up" vector */);
+	
 
 	// Display general information
 	display_info();
@@ -46,19 +43,11 @@ void scene_structure::initialize()
 	// ********************************************** //
 
 	float L = 5.0f;
-	mesh terrain_mesh = mesh_primitive_grid({ -L,-L,0 }, { L,-L,0 }, { L,L,0 }, { -L,L,0 }, 100, 100);
-	deform_terrain(terrain_mesh);
-	terrain.initialize_data_on_gpu(terrain_mesh);
-	terrain.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/sand.jpg");
+	
 
-	float sea_w = 8.0;
-	float sea_z = -0.8f;
-	water.initialize_data_on_gpu(mesh_primitive_grid({ -sea_w,-sea_w,sea_z }, { sea_w,-sea_w,sea_z }, { sea_w,sea_w,sea_z }, { -sea_w,sea_w,sea_z }));
-	water.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/sea.png");
+	
 
-	tree.initialize_data_on_gpu(mesh_load_file_obj(project::path + "assets/palm_tree/palm_tree.obj"));
-	tree.model.rotation = rotation_transform::from_axis_angle({ 1,0,0 }, Pi / 2.0f);
-	tree.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/palm_tree/palm_tree.jpg", GL_REPEAT, GL_REPEAT);
+	
 	turtle_shader.load(
 		project::path + "shaders/turtle/turtle.vert.glsl",
 		project::path + "shaders/mesh/mesh.frag.glsl");
@@ -99,22 +88,26 @@ void scene_structure::initialize()
 
 	shark.groups["Jaw"]  = { 29, 30};  
 	turtle.drawable.model.rotation = rotation_transform::from_axis_angle({1, 0, 0}, Pi / 2.0f);
-	vec3 position = {0.2f, 0.4f, 0.5f};
-	turtle.drawable.model.translation = position;
+	vec3 turtle_pos = {0.2f, 0.4f, 0.5f};
+	turtle.drawable.model.translation = turtle_pos;
 
 
 	shark.drawable.model.rotation = rotation_transform::from_axis_angle({1, 0, 0}, Pi / 2.0f);
-	position = {1.0f, 2.0f, 3.5f};
-	shark.drawable.model.translation = position;
+	vec3 shark_pos = turtle_pos + vec3{ 0.0f, 20.0f, 0.0f };
+	shark.drawable.model.translation = shark_pos;
 	
+	vec3 camera_pos = turtle_pos + vec3{ 0.0f, -0.5f, 0.3f };
+	vec3 camera_target = turtle_pos + vec3{ 0.0f, 1.0f, 0.2f }; // small tilt down
+
 	
 
-	cube1.initialize_data_on_gpu(mesh_primitive_cube({ 0,0,0 }, 0.5f));
-	cube1.model.rotation = rotation_transform::from_axis_angle({ -1,1,0 }, Pi / 7.0f);
-	cube1.model.translation = { 1.0f,1.0f,-0.1f };
-	cube1.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/wood.jpg");
-
-	cube2 = cube1;
+	
+	camera_control.look_at(
+		camera_pos,
+		camera_target,
+		{ 0.0f, 0.0f, 1.0f }   // 'up' is still Z
+	);
+	
 
 
 }
@@ -193,15 +186,7 @@ void scene_structure::display_frame()
 	
 
 	// Draw all the shapes
-	draw(terrain, environment);
-	draw(water, environment);
-	draw(tree, environment);
-	draw(cube1, environment);
-
-	// Animate the second cube in the water
-	cube2.model.translation = { -1.0f, 6.0f+0.1*sin(0.5f*timer.t), -0.8f + 0.1f * cos(0.5f * timer.t)};
-	cube2.model.rotation = rotation_transform::from_axis_angle({1,-0.2,0},Pi/12.0f*sin(0.5f*timer.t));
-	draw(cube2, environment);
+	
 
 	if (gui.display_wireframe) {
 		draw_wireframe(terrain, environment);
