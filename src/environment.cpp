@@ -27,6 +27,9 @@ void environment_structure::send_opengl_uniform(opengl_shader_structure const& s
 	opengl_uniform(shader, "projection", camera_projection, expected);
 	opengl_uniform(shader, "view", camera_view, expected);
 	opengl_uniform(shader, "light", light, false);
+	opengl_uniform(shader, "fog_d_max", fog_d_max, false);
+	opengl_uniform(shader, "fog_color", fog_color, false);
+
 
 	uniform_generic.send_opengl_uniform(shader, expected);
 
