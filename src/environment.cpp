@@ -41,6 +41,8 @@ void environment_structure::send_opengl_uniform(opengl_shader_structure const& s
 	// playback parameters
 	opengl_uniform(shader, "caustic_frame_count", caustic_frame_count, false);
 	opengl_uniform(shader, "caustic_fps",         caustic_fps,         false);
+	opengl_uniform(shader, "caustic_intensity", caustic_intensity, false);
+	opengl_uniform(shader, "caustic_scale",         caustic_scale,         false);
 
 
 	uniform_generic.send_opengl_uniform(shader, expected);

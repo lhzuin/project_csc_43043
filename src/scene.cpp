@@ -1,4 +1,5 @@
 #include "scene.hpp"
+#include "animated_texture.hpp"
 
 
 using namespace cgp;
@@ -50,7 +51,7 @@ void scene_structure::initialize()
 	
 	turtle_shader.load(
 		project::path + "shaders/turtle/turtle.vert.glsl",
-		project::path + "shaders/mesh/custom_mesh3.frag.glsl");
+		project::path + "shaders/mesh/custom_mesh.frag.glsl");
 
 	turtle.load_from_gltf(
         project::path+"assets/sea_turtle/sea_turtle.gltf",
@@ -63,6 +64,7 @@ void scene_structure::initialize()
 
 	shark.load_from_gltf(project::path+"assets/shark/scene.gltf",turtle_shader);
 	shark.drawable.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/shark/textures/SharkBody.png", GL_REPEAT, GL_REPEAT);
+	
 	shark.groups["Tail"] = {
 			6,   // TailMid
 			7, 8,  // TailTop
@@ -109,7 +111,12 @@ void scene_structure::initialize()
 	);
 	
 
-
+	environment.caustic_array_tex = create_texture_array_from_sequence(
+		project::path + "assets/caustics/02B_Caribbean_Caustics_Deep_FREE_SAMPLE_",
+		240,
+		4,
+		image_format::jpg
+	);
 }
 
 // This function is called permanently at every new frame
@@ -122,9 +129,11 @@ void scene_structure::display_frame()
 
 	// advance clock
 	timer.update();
+	environment.uniform_generic.uniform_float["time"] = timer.t;
 
 	/* ----- build skin matrices each frame -------------------- */
 	float t = timer.t;
+	
 	/* ------------ flap angles -------------------------------------- */
     float aFront = 0.1f * std::sin( 2.0f * timer.t );        // front pair
     float aRear  = 0.1f * std::sin( 2.0f * timer.t + cgp::Pi ); // rear 180°
