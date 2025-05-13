@@ -14,7 +14,7 @@ using namespace cgp;
 struct environment_structure : environment_generic_structure
 {
 	// Color of the background of the scene
-	vec3 background_color = {1,1,1}; // Used in the main program
+	vec3 background_color = vec3(0.0, 0.3, 0.5);//{1,1,1}; // Used in the main program
 
 	// The position/orientation of a camera that can rotates freely around a specific position
 	mat4 camera_view;
@@ -24,6 +24,16 @@ struct environment_structure : environment_generic_structure
 
 	// The position of a light
 	vec3 light = {1,1,1};
+
+	vec3 fog_color = vec3(0.0, 0.3, 0.5);
+	float fog_d_max = 15.0;
+
+	// number of frames in the sequence
+	int   caustic_frame_count = 240;  
+	float caustic_fps         = 30.0f;     // how many frames per second to play
+	GLuint caustic_array_tex  = 0;         // GL handle
+
+	
 
 	// Additional uniforms that can be attached to the environment if needed (empty by default)
 	uniform_generic_structure uniform_generic;

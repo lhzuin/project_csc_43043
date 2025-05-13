@@ -50,7 +50,7 @@ void scene_structure::initialize()
 	
 	turtle_shader.load(
 		project::path + "shaders/turtle/turtle.vert.glsl",
-		project::path + "shaders/mesh/mesh.frag.glsl");
+		project::path + "shaders/mesh/custom_mesh3.frag.glsl");
 
 	turtle.load_from_gltf(
         project::path+"assets/sea_turtle/sea_turtle.gltf",
