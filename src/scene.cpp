@@ -135,57 +135,27 @@ void scene_structure::display_frame()
 	/* ------------ flap angles -------------------------------------- */
     float aFront = 0.1f * std::sin( 2.0f * timer.t );        // front pair
     float aRear  = 0.1f * std::sin( 2.0f * timer.t + cgp::Pi ); // rear 180°
-
-	turtle.reset_pose();
-	turtle.rotate_group("RF", {0,0,1},  aFront);
-	turtle.rotate_group("LF", {0,0,1},  aFront);
-	turtle.rotate_group("RR", {0,0,1},  aRear );
-	turtle.rotate_group("LR", {0,0,1},  aRear );
-	turtle.upload_pose_to_gpu();        
-	draw(turtle.drawable, environment);       
-
-	/* --------- REQUIN ------------------------------------------------ */
 	float f  = 0.2f;                            // Hz : battements / seconde
-	float w  = 2.0f * cgp::Pi * f;              // pulsation
-	float A  = 0.16f;                           // amplitude max au bout
-	float amplitude_ratio = 0.5f;
-	float lag= 0.40f;                           // retard (rad) entre vertèbres
-	float jaw_A = 0.15f;
-	float fin_A = 0.12f;
+	float w  = 2.0f * cgp::Pi * f; 
 
-	/* ======== SHARK ======================================================= */
-	shark.reset_pose();
+	turtle.reset_pose();                  // remet la bind-pose
 
-	/* -------------- corps (onde qui se propage) ------------------- */
-	std::array<std::string_view,4> seg = {
-		"Body0","Body1","Body2", "Body3"
-	};
-	for (size_t i=0;i<seg.size();++i){
-		float amp   = A * (amplitude_ratio + (1-amplitude_ratio)*i/seg.size());   // rampe 50 % →100 %
-		float phase = w*t - i*lag;                      // onde vers l’arrière
-		shark.rotate_group(seg[i], {0,0,1}, amp*std::sin(phase));
-	}
-	/* -------------- Tail (with the same mouvement as the last part of the body) ------------------- */
-	size_t last = seg.size() - 1;           
-	float amp_last   = A * ( amplitude_ratio
-						+ (1 - amplitude_ratio) * last / (seg.size()) );
-	float phase_last = w*t - last * lag;
+	float aF = 0.5f * std::sin( 2*w*t );  // w = 2πf
+	float aR = 0.5f * std::sin( 2*w*t + cgp::Pi );
 
-	shark.rotate_group("Tail", {0,0,1}, amp_last* std::sin(phase_last));
+	/* indices des racines de nageoires (voir le print) */
+	turtle.rotate_joint( 2, {0,0,1},  aF);   // RF
+	turtle.rotate_joint(10, {0,0,1},  aF);   // LF
+	turtle.rotate_joint( 6, {0,0,1},  aR);   // RR
+	turtle.rotate_joint(14, {0,0,1},  aR);   // LR
 
-	/* -------------- nageoires pectorales ---------------------------------- */
-	/* petite battue anti-roulis décalée d’un quart de période                */
-	float fin = fin_A * std::sin(w*t + cgp::Pi/2);
-	shark.rotate_group("FinL",{0,1,0},  fin);   // gauche = +Z
-	shark.rotate_group("FinR",{0,1,0}, -fin);   // droite = −Z
+	turtle.update_pose();      // => remplit uBones
+	turtle.upload_pose_to_gpu();
+	draw(turtle.drawable, environment);    
 
-	/* -------------- mâchoire ---------------------------------------------- */
-	float jaw = jaw_A * std::max(0.f, std::sin(w*t));   // ouvre 1× par cycle
-	shark.rotate_group("Jaw",{1,0,0}, jaw);
+	
 
-	/* -------------- upload & draw ----------------------------------------- */
-	shark.upload_pose_to_gpu();
-	draw(shark.drawable, environment);
+	
 
 	// conditional display of the global frame (set via the GUI)
 	if (gui.display_frame)

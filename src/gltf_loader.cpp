@@ -200,8 +200,12 @@ gltf_geometry_and_texture mesh_load_file_gltf(const std::string& filename)
             upload_texture_from_gltf(model.images[imgIndex], cache[imgIndex]);
         result.tex = cache[imgIndex];          // store in the struct, **not** in the mesh
     }
-
-    if(!model.skins.empty()){
+    if (model.skins.empty())
+    {
+        result.geom.fill_empty_field();
+        return result;     
+    }
+    else {
         const tinygltf::Skin& skin = model.skins[0];
     
         /* joint → node index list */
@@ -219,6 +223,32 @@ gltf_geometry_and_texture mesh_load_file_gltf(const std::string& filename)
         result.inverse_bind.resize(njoint);
         for(size_t j = 0; j < njoint; ++j)
             result.inverse_bind[j] = make_mat4(mdata + 16*j);
+
+        /*  construire le tableau parent[]  --------------------------------- */
+        std::vector<int> parent_id(model.nodes.size(), -1);
+        for (size_t n = 0; n < model.nodes.size(); ++n)
+            for (int c : model.nodes[n].children)
+                parent_id[c] = static_cast<int>(n);
+
+        /* ------------------------------------------------------------------ */
+        /*  pour tous les joints du skin                                      */
+        size_t J = skin.joints.size();
+        result.joint_parent.resize(J);
+        result.joint_local .resize(J);
+
+        for (size_t j = 0; j < J; ++j)
+        {
+            int node = skin.joints[j];
+            result.joint_parent[j] = -1;                // valeur par défaut
+            /* si le parent du node appartient aussi au skin ---------------- */
+            int p = parent_id[node];
+            if (p >= 0)
+            {
+                auto it = std::find(skin.joints.begin(), skin.joints.end(), p);
+                if (it != skin.joints.end())
+                    result.joint_parent[j] = static_cast<int>(it - skin.joints.begin());
+            }
+        }
     }
     
     result.geom.fill_empty_field();
@@ -229,7 +259,8 @@ gltf_geometry_and_texture mesh_load_file_gltf(const std::string& filename)
             std::cout << j << "     "
                     << result.joint_node[j] << "     "
                     << model.nodes[ result.joint_node[j] ].name << '\n';
-}
+    }
+
     return result;
 }
 

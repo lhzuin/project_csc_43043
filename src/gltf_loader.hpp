@@ -25,5 +25,8 @@
 
     std::vector<cgp::mat4>    inverse_bind;  // one per joint
     std::vector<int>          joint_node;    // maps joint → node index
+
+    std::vector<int>      joint_parent;   // parent pour chaque joint  (-1 = racine)
+    std::vector<cgp::mat4> joint_local;   // matrice locale (bind-pose) de chaque joint
 };
 gltf_geometry_and_texture mesh_load_file_gltf(const std::string& filename);
