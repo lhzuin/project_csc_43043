@@ -1,124 +1,155 @@
-#version 330 core
+#version 330 core 
 
-in struct fragment_data {
-    vec3 position;  
-    vec3 normal;    
-    vec3 color;     
-    vec2 uv;        
+// Fragment shader - this code is executed for every pixel/fragment that belongs to a displayed shape
+//
+// Compute the color using Phong illumination (ambient, diffuse, specular) 
+//  There is 3 possible input colors:
+//    - fragment_data.color: the per-vertex color defined in the mesh
+//    - material.color: the uniform color (constant for the whole shape)
+//    - image_texture: color coming from the texture image
+//  The color considered is the product of: fragment_data.color x material.color x image_texture
+//  The alpha (/transparent) channel is obtained as the product of: material.alpha x image_texture.a
+// 
+
+// Inputs coming from the vertex shader
+in struct fragment_data
+{
+    vec3 position; // position in the world space
+    vec3 normal;   // normal in the world space
+    vec3 color;    // current color on the fragment
+    vec2 uv;       // current uv-texture on the fragment
+
 } fragment;
 
+// Output of the fragment shader - output color
 layout(location=0) out vec4 FragColor;
 
-// ——— your existing uniforms ———
-uniform sampler2D image_texture;
-uniform mat4 view;
-uniform vec3 light;             // point-light position
-uniform vec3 lightColor;        // point-light color
-uniform material_structure {
-    vec3 color;
-    float alpha;
-    phong_structure {
-        float ambient;
-        float diffuse;
-        float specular;
-        float specular_exponent;
-    } phong;
-    texture_settings_structure {
-        bool use_texture;
-        bool texture_inverse_v;
-        bool two_sided;
-    } texture_settings;
-} material;
 
-// ——— new uniforms ———
-uniform vec3 sunDir;            // normalized direction *towards* sun (e.g. vec3(0,1,1))
-uniform vec3 sunColor;          // color/intensity of sun
-uniform sampler2D causticMap;   // animated caustic texture (e.g. 128×128 loop)
-uniform sampler2D flowMap;      // noise/flow texture
-uniform float time;            
+// Uniform values that must be send from the C++ code
+// ***************************************************** //
 
-// scale & strength parameters
-uniform float flowScale;        
-uniform float flowSpeed;        
-uniform float flowAmplitude;    
-uniform float causticScale;     
-uniform float causticIntensity; 
-uniform float fogDensity;       
-uniform vec3  fogColor;         
+uniform sampler2D image_texture;   // Texture image identifiant
+
+uniform sampler2DArray causticMapArray;
+uniform int caustic_frame_count;
+uniform float  caustic_fps;
+uniform float caustic_scale;
+uniform float caustic_intensity;
+
+uniform mat4 view;       // View matrix (rigid transform) of the camera - to compute the camera position
+
+uniform vec3 light; // position of the light
+
+
+uniform vec3 fog_color;
+uniform float fog_d_max;
+
+uniform float time;
+
+// Coefficients of phong illumination model
+struct phong_structure {
+	float ambient;      
+	float diffuse;
+	float specular;
+	float specular_exponent;
+};
+
+// Settings for texture display
+struct texture_settings_structure {
+	bool use_texture;       // Switch the use of texture on/off
+	bool texture_inverse_v; // Reverse the texture in the v component (1-v)
+	bool two_sided;         // Display a two-sided illuminated surface (doesn't work on Mac)
+};
+
+// Material of the mesh (using a Phong model)
+struct material_structure
+{
+	vec3 color;  // Uniform color of the object
+	float alpha; // alpha coefficient
+
+	phong_structure phong;                       // Phong coefficients
+	texture_settings_structure texture_settings; // Additional settings for the texture
+}; 
+
+uniform material_structure material;
+
 
 void main()
 {
-    // ——— camera position in world space ———
-    mat3 O = transpose(mat3(view));
-    vec3 last_col = vec3(view * vec4(0,0,0,1));
-    vec3 camera_position = -O * last_col;
+	// Compute the position of the center of the camera
+	mat3 O = transpose(mat3(view));                   // get the orientation matrix
+	vec3 last_col = vec3(view*vec4(0.0, 0.0, 0.0, 1.0)); // get the last column
+	vec3 camera_position = -O*last_col;
 
-    // ——— normal & view vector ———
-    vec3 N = normalize(fragment.normal);
-    if (material.texture_settings.two_sided && !gl_FrontFacing)
-        N = -N;
-    vec3 V = normalize(camera_position - fragment.position);
 
-    // ——— base color from vertex, material & texture ———
-    vec2 uv_image = fragment.uv;
-    if (!material.texture_settings.use_texture) {
-        // ignore texture
-    } else {
-        if (material.texture_settings.texture_inverse_v)
-            uv_image.y = 1.0 - uv_image.y;
-    }
-    vec4 tex = material.texture_settings.use_texture
-        ? texture(image_texture, uv_image)
-        : vec4(1.0);
-    vec3 baseColor = fragment.color * material.color * tex.rgb;
+	// Renormalize normal
+	vec3 N = normalize(fragment.normal);
 
-    // ——— POINT LIGHT (your existing “light” uniform) ———
-    vec3 Lp = normalize(light - fragment.position);
-    float diff_p = max(dot(N, Lp), 0.0);
-    float spec_p = 0.0;
-    if (diff_p > 0.0) {
-        vec3 R = reflect(-Lp, N);
-        spec_p = pow(max(dot(R, V), 0.0), material.phong.specular_exponent);
-    }
-    vec3 amb_p  = material.phong.ambient * baseColor * lightColor;
-    vec3 dif_p  = material.phong.diffuse * diff_p * baseColor * lightColor;
-    vec3 spc_p  = material.phong.specular * spec_p * lightColor;
+	// Inverse the normal if it is viewed from its back (two-sided surface)
+	//  (note: gl_FrontFacing doesn't work on Mac)
+	if (material.texture_settings.two_sided && gl_FrontFacing == false) {
+		N = -N;
+	}
 
-    // ——— DIRECTIONAL “SUN” LIGHT ———
-    vec3 Ld = normalize(-sunDir);
-    float diff_d = max(dot(N, Ld), 0.0);
-    float spec_d = 0.0;
-    if (diff_d > 0.0) {
-        vec3 R = reflect(sunDir, N);
-        spec_d = pow(max(dot(R, V), 0.0), material.phong.specular_exponent);
-    }
-    vec3 amb_d = material.phong.ambient * baseColor * sunColor;
-    vec3 dif_d = material.phong.diffuse * diff_d * baseColor * sunColor;
-    vec3 spc_d = material.phong.specular * spec_d * sunColor;
+	// Phong coefficient (diffuse, specular)
+	// *************************************** //
 
-    // ——— COMBINED SHADING ———
-    vec3 color_shading = amb_p + dif_p + spc_p
-                       + amb_d + dif_d + spc_d;
+	// Unit direction toward the light
+	vec3 L = normalize(light-fragment.position);
 
-    // ——— PROJECTED CAUSTICS ———
-    vec2 causticUV = fragment.position.xz * causticScale 
-                     + vec2(time * flowSpeed * 0.5);
-    float caustic = texture(causticMap, fract(causticUV)).r
-                    * causticIntensity;
-    color_shading += caustic * baseColor;
+	// Diffuse coefficient
+	float diffuse_component = max(dot(N,L),0.0);
 
-    // ——— FLOW-BASED DISTORTION (“current”) ———
-    vec2 flowUV = fragment.position.xz * flowScale 
-                  + vec2(time * flowSpeed);
-    vec2 flowRG = texture(flowMap, fract(flowUV)).rg * 2.0 - 1.0;
-    vec3 displacedPos = fragment.position
-                        + vec3(flowRG.x, 0.0, flowRG.y) * flowAmplitude;
+	// Specular coefficient
+	float specular_component = 0.0;
+	if(diffuse_component>0.0){
+		vec3 R = reflect(-L,N); // reflection of light vector relative to the normal.
+		vec3 V = normalize(camera_position-fragment.position);
+		specular_component = pow( max(dot(R,V),0.0), material.phong.specular_exponent );
+	}
 
-    // ——— EXPONENTIAL FOG ———
-    float dist = length(camera_position - displacedPos);
-    float fogFactor = 1.0 - exp(-fogDensity * dist);
-    fogFactor = clamp(fogFactor, 0.0, 1.0);
+	// Texture
+	// *************************************** //
 
-    vec3 finalColor = mix(color_shading, fogColor, fogFactor);
-    FragColor = vec4(finalColor, material.alpha * tex.a);
+	// Current uv coordinates
+	vec2 uv_image = vec2(fragment.uv.x, fragment.uv.y);
+	if(material.texture_settings.texture_inverse_v) {
+		uv_image.y = 1.0-uv_image.y;
+	}
+
+	// Get the current texture color
+	vec4 color_image_texture = texture(image_texture, uv_image);
+	if(material.texture_settings.use_texture == false) {
+		color_image_texture=vec4(1.0,1.0,1.0,1.0);
+	}
+	
+	// Compute Shading
+	// *************************************** //
+
+	// Compute the base color of the object based on: vertex color, uniform color, and texture
+	vec3 color_object  = fragment.color * material.color * color_image_texture.rgb;
+
+	// Compute the final shaded color using Phong model
+	float Ka = material.phong.ambient;
+	float Kd = material.phong.diffuse;
+	float Ks = material.phong.specular;
+	vec3 color_shading = (Ka + Kd * diffuse_component) * color_object + Ks * specular_component * vec3(1.0, 1.0, 1.0);
+
+    // —— caustics flip‐book ——
+    float f = time * caustic_fps;
+    int   idx = int(mod(f, float(caustic_frame_count)));
+
+    vec2 caUV = fragment.position.xz * caustic_scale
+                + vec2(time * 0.5);
+    float ca = texture(causticMapArray, vec3(fract(caUV), idx)).r
+            * caustic_intensity;
+    color_shading += ca * color_object;
+
+	// Add Fog
+	float alpha_f = min(length(camera_position - fragment.position)/fog_d_max, 1.0);
+
+	vec3 color_fog = (1-alpha_f)*color_shading + alpha_f*fog_color;
+	
+	// Output color, with the alpha component
+	FragColor = vec4(color_fog, material.alpha * color_image_texture.a);
 }

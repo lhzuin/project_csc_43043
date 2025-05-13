@@ -30,8 +30,10 @@ struct environment_structure : environment_generic_structure
 
 	// number of frames in the sequence
 	int   caustic_frame_count = 240;  
-	float caustic_fps         = 30.0f;     // how many frames per second to play
-	GLuint caustic_array_tex  = 0;         // GL handle
+	float caustic_fps = 5.0f;     // how many frames per second to play
+	float caustic_scale = 0.5f;
+	float caustic_intensity = 0.3f;
+	GLuint caustic_array_tex  = 0;// GL handle
 
 	
 
