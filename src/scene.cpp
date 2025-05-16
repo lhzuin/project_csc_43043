@@ -1,5 +1,6 @@
 #include "scene.hpp"
 #include "animated_texture.hpp"
+#include "shark_actor.hpp"
 
 
 using namespace cgp;
@@ -47,8 +48,6 @@ void scene_structure::initialize()
 	
 
 	
-
-	
 	turtle_shader.load(
 		project::path + "shaders/turtle/turtle.vert.glsl",
 		project::path + "shaders/mesh/custom_mesh.frag.glsl");
@@ -61,42 +60,19 @@ void scene_structure::initialize()
     turtle.groups["RR"] = {  6,  7,  8,  9 };   // right-rear
     turtle.groups["LF"] = { 10, 11, 12, 13 };   // left-front
     turtle.groups["LR"] = { 14, 15, 16, 17 };   // left-rear
-
-	shark.load_from_gltf(project::path+"assets/shark/scene.gltf",turtle_shader);
-	shark.drawable.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/shark/textures/SharkBody.png", GL_REPEAT, GL_REPEAT);
-	
-	shark.groups["Tail"] = {
-			6,   // TailMid
-			7, 8,  // TailTop
-			9, 10,   // TailBottom_08  + end bones – add more if you like
-	};
-	shark.groups["Body0"] = { 2 };        // Spine01_02  (près des branchies)
-	shark.groups["Body1"] = { 
-		3, // Spine02_03
-		17,18,19 // First dorsal fin
-	
-	};        
-	shark.groups["Body2"] = {
-		4, // Spine03_04
-		15,16 // Pelvic fin
-	};        
-	shark.groups["Body3"] = { 
-		5, // Spine04_05 (pédoncule/tail)
-		11, 12, // Second dorsal fin
-		13, 14, // Bone under dorsal fin
-	};
-	shark.groups["FinL"]  = { 20, 21, 22};   // Pectoral L (01, 02)
-	shark.groups["FinR"]  = { 25, 26, 27 };   // Pectoral R
-
-	shark.groups["Jaw"]  = { 29, 30};  
 	turtle.drawable.model.rotation = rotation_transform::from_axis_angle({1, 0, 0}, Pi / 2.0f);
 	vec3 turtle_pos = {0.2f, 0.4f, 0.5f};
 	turtle.drawable.model.translation = turtle_pos;
 
+	shark.initialize(turtle_shader,
+    project::path+"assets/shark/scene.gltf",
+    project::path+"assets/shark/textures/SharkBody.png");
+	
 
-	shark.drawable.model.rotation = rotation_transform::from_axis_angle({1, 0, 0}, Pi / 2.0f);
-	vec3 shark_pos = turtle_pos + vec3{ 0.0f, 20.0f, 0.0f };
-	shark.drawable.model.translation = shark_pos;
+	shark.origin = turtle_pos + vec3{ 0.0f, 20.0f, 0.5f };
+	shark.target = turtle_pos + vec3{ 0.0f, 0.0f, 0.5f };  // desired swim-to point
+	shark.speed  = 2.0f;                // units/sec
+	shark.drawable.model.translation = shark.origin;
 	
 	vec3 camera_pos = turtle_pos + vec3{ 0.0f, -0.5f, 0.3f };
 	vec3 camera_target = turtle_pos + vec3{ 0.0f, 1.0f, 0.2f }; // small tilt down
@@ -127,12 +103,14 @@ void scene_structure::display_frame()
 	// Set the light to the current position of the camera
 	environment.light = camera_control.camera_model.position();
 
+	float t_prev = timer.t;
+
 	// advance clock
 	timer.update();
+	float dt = timer.t - t_prev;
 	environment.uniform_generic.uniform_float["time"] = timer.t;
 
 	/* ----- build skin matrices each frame -------------------- */
-	float t = timer.t;
 	
 	/* ------------ flap angles -------------------------------------- */
     float aFront = 0.1f * std::sin( 2.0f * timer.t );        // front pair
@@ -146,46 +124,9 @@ void scene_structure::display_frame()
 	turtle.upload_pose_to_gpu();        
 	draw(turtle.drawable, environment);       
 
-	/* --------- REQUIN ------------------------------------------------ */
-	float f  = 0.2f;                            // Hz : battements / seconde
-	float w  = 2.0f * cgp::Pi * f;              // pulsation
-	float A  = 0.16f;                           // amplitude max au bout
-	float amplitude_ratio = 0.5f;
-	float lag= 0.40f;                           // retard (rad) entre vertèbres
-	float jaw_A = 0.15f;
-	float fin_A = 0.12f;
-
 	/* ======== SHARK ======================================================= */
-	shark.reset_pose();
-
-	/* -------------- corps (onde qui se propage) ------------------- */
-	std::array<std::string_view,4> seg = {
-		"Body0","Body1","Body2", "Body3"
-	};
-	for (size_t i=0;i<seg.size();++i){
-		float amp   = A * (amplitude_ratio + (1-amplitude_ratio)*i/seg.size());   // rampe 50 % →100 %
-		float phase = w*t - i*lag;                      // onde vers l’arrière
-		shark.rotate_group(seg[i], {0,0,1}, amp*std::sin(phase));
-	}
-	/* -------------- Tail (with the same mouvement as the last part of the body) ------------------- */
-	size_t last = seg.size() - 1;           
-	float amp_last   = A * ( amplitude_ratio
-						+ (1 - amplitude_ratio) * last / (seg.size()) );
-	float phase_last = w*t - last * lag;
-
-	shark.rotate_group("Tail", {0,0,1}, amp_last* std::sin(phase_last));
-
-	/* -------------- nageoires pectorales ---------------------------------- */
-	/* petite battue anti-roulis décalée d’un quart de période                */
-	float fin = fin_A * std::sin(w*t + cgp::Pi/2);
-	shark.rotate_group("FinL",{0,1,0},  fin);   // gauche = +Z
-	shark.rotate_group("FinR",{0,1,0}, -fin);   // droite = −Z
-
-	/* -------------- mâchoire ---------------------------------------------- */
-	float jaw = jaw_A * std::max(0.f, std::sin(w*t));   // ouvre 1× par cycle
-	shark.rotate_group("Jaw",{1,0,0}, jaw);
-
-	/* -------------- upload & draw ----------------------------------------- */
+	shark.update_position(dt);
+	shark.animate(timer.t);
 	shark.upload_pose_to_gpu();
 	draw(shark.drawable, environment);
 
