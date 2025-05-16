@@ -6,6 +6,7 @@
 #include "gltf_loader.hpp"
 #include "gpu_skin_helper.hpp" 
 #include "skinned_actor.hpp"
+#include "shark_actor.hpp"
 
 // This definitions allow to use the structures: mesh, mesh_drawable, etc. without mentionning explicitly cgp::
 using cgp::mesh;
@@ -39,7 +40,7 @@ struct scene_structure : cgp::scene_inputs_generic {
 	skinned_actor turtle;
 	opengl_shader_structure turtle_shader;
 
-	skinned_actor shark;
+	shark_actor shark;
 
     
 
