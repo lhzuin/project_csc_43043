@@ -26,6 +26,12 @@ struct shark_actor : public skinned_actor {
                     std::string const& texture_file);
 
     /**
+     * Initializes position and target for the shark
+     */
+
+    void start_position(skinned_actor target_actor);
+
+    /**
      * Swim movement + directional alignment.
      */
     void update_position(float dt);
@@ -34,6 +40,12 @@ struct shark_actor : public skinned_actor {
      * Generate wiggling animation on body, tail, fins and jaw.
      */
     void animate(float t);
+
+    /**
+     * Checks for collision between the shark and another skinned_actor
+     */
+
+     bool check_for_collision(skinned_actor actor);
 
 private:
     /// Align the mesh forward (-Y) to given direction

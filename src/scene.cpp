@@ -55,7 +55,7 @@ void scene_structure::initialize()
 	turtle.load_from_gltf(
         project::path+"assets/sea_turtle/sea_turtle.gltf",
         turtle_shader);
-
+	turtle.radius = 0.5f;
     turtle.groups["RF"] = {  2,  3,  4,  5 };   // right-front flipper
     turtle.groups["RR"] = {  6,  7,  8,  9 };   // right-rear
     turtle.groups["LF"] = { 10, 11, 12, 13 };   // left-front
@@ -67,12 +67,7 @@ void scene_structure::initialize()
 	shark.initialize(turtle_shader,
     project::path+"assets/shark/scene.gltf",
     project::path+"assets/shark/textures/SharkBody.png");
-	
-
-	shark.origin = turtle_pos + vec3{ 0.0f, 20.0f, 0.5f };
-	shark.target = turtle_pos + vec3{ 0.0f, 0.0f, 0.5f };  // desired swim-to point
-	shark.speed  = 2.0f;                // units/sec
-	shark.drawable.model.translation = shark.origin;
+	shark.start_position(turtle);
 	
 	vec3 camera_pos = turtle_pos + vec3{ 0.0f, -0.5f, 0.3f };
 	vec3 camera_target = turtle_pos + vec3{ 0.0f, 1.0f, 0.2f }; // small tilt down
@@ -103,47 +98,56 @@ void scene_structure::display_frame()
 	// Set the light to the current position of the camera
 	environment.light = camera_control.camera_model.position();
 
-	float t_prev = timer.t;
+	if (!game_over) {
+		float t_prev = timer.t;
 
-	// advance clock
-	timer.update();
-	float dt = timer.t - t_prev;
-	environment.uniform_generic.uniform_float["time"] = timer.t;
+		// advance clock
+		timer.update();
+		float dt = timer.t - t_prev;
+		environment.uniform_generic.uniform_float["time"] = timer.t;
 
-	/* ----- build skin matrices each frame -------------------- */
-	
-	/* ------------ flap angles -------------------------------------- */
-    float aFront = 0.1f * std::sin( 2.0f * timer.t );        // front pair
-    float aRear  = 0.1f * std::sin( 2.0f * timer.t + cgp::Pi ); // rear 180°
+		
+		/* ------------ Turtle -------------------------------------- */
+		float aFront = 0.1f * std::sin( 2.0f * timer.t );        // front pair
+		float aRear  = 0.1f * std::sin( 2.0f * timer.t + cgp::Pi ); // rear 180°
 
-	turtle.reset_pose();
-	turtle.rotate_group("RF", {0,0,1},  aFront);
-	turtle.rotate_group("LF", {0,0,1},  aFront);
-	turtle.rotate_group("RR", {0,0,1},  aRear );
-	turtle.rotate_group("LR", {0,0,1},  aRear );
-	turtle.upload_pose_to_gpu();        
-	draw(turtle.drawable, environment);       
+		turtle.reset_pose();
+		turtle.rotate_group("RF", {0,0,1},  aFront);
+		turtle.rotate_group("LF", {0,0,1},  aFront);
+		turtle.rotate_group("RR", {0,0,1},  aRear );
+		turtle.rotate_group("LR", {0,0,1},  aRear );
+		turtle.upload_pose_to_gpu();
+		draw(turtle.drawable, environment);          
+			
 
-	/* ======== SHARK ======================================================= */
-	shark.update_position(dt);
-	shark.animate(timer.t);
-	shark.upload_pose_to_gpu();
-	draw(shark.drawable, environment);
+		/* ======== SHARK ======================================================= */
+		shark.update_position(dt);
+		shark.animate(timer.t);
+		shark.upload_pose_to_gpu();
+		draw(shark.drawable, environment);
+
+		game_over = shark.check_for_collision(turtle);
+	}
+	else {
+		draw(turtle.drawable, environment);
+		draw(shark.drawable, environment);
+		ImGui::Begin("Game"); 
+		ImGui::Text("💥 Turtle got eaten!");
+		if (ImGui::Button("Restart")) {
+			initialize();      // reset everything
+			game_over = false;
+			shark.start_position(turtle);
+			timer.update();
+		}
+		ImGui::End();
+	}
+
+
 
 	// conditional display of the global frame (set via the GUI)
 	if (gui.display_frame)
 		draw(global_frame, environment);
-	
-
-	// Draw all the shapes
-	
-
 	if (gui.display_wireframe) {
-		draw_wireframe(terrain, environment);
-		draw_wireframe(water, environment);
-		draw_wireframe(tree, environment);
-		draw_wireframe(cube1, environment);
-		draw_wireframe(cube2, environment);
 		draw_wireframe(shark.drawable, environment);
 		draw_wireframe(turtle.drawable, environment);
 	}
