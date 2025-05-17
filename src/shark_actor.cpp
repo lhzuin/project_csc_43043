@@ -22,8 +22,6 @@ void shark_actor::initialize(cgp::opengl_shader_structure const& shader,
         {"FinR",   {25,26,27}},
         {"Jaw",    {29,30}}
     };
-
-    radius = 3.0f;
 }
 
 void shark_actor::start_position(skinned_actor target_actor) {

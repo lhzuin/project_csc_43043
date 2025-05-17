@@ -21,7 +21,11 @@ struct skinned_actor
     std::vector<cgp::mat4> uBones;         ///< |J| final pose (shader)
 
     cgp::mesh_drawable     drawable;       ///< the mesh we actually draw
-    float  radius; // Collision radius
+
+    // Collision mechanism
+    cgp::mesh geometry;
+    float  radius;
+    void compute_radius(); 
 
     /*=============== high-level helpers =============================*/
     /// a named set of joints, e.g. "Tail", "Mouth", "RF" (right-front fin) …

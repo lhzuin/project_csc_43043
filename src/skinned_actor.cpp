@@ -1,7 +1,13 @@
 #include "skinned_actor.hpp"
 #include "cgp/cgp.hpp"
 
+void skinned_actor::compute_radius(){
+    cgp::vec3 p_min, p_max;
+    geometry.get_bounding_box_position(p_min, p_max);                       // min/max
+    cgp::vec3 diag = p_max - p_min;
+    radius = 0.4f * std::max({ diag.x, diag.y, diag.z });
 
+}
 void skinned_actor::rotate_group(std::string_view group_name,
     cgp::vec3 axis, float angle_rad)
 {
@@ -38,6 +44,7 @@ void skinned_actor::load_from_gltf(const std::string& file,
     int skin_id)
 {
     gltf_geometry_and_texture data = mesh_load_file_gltf(file);
+    geometry = data.geom;
 
     drawable.initialize_data_on_gpu(data.geom, shader, data.tex);
     add_skin_attributes(drawable, data.joint_index, data.joint_weight);
