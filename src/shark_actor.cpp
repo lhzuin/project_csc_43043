@@ -22,6 +22,15 @@ void shark_actor::initialize(cgp::opengl_shader_structure const& shader,
         {"FinR",   {25,26,27}},
         {"Jaw",    {29,30}}
     };
+
+    radius = 3.0f;
+}
+
+void shark_actor::start_position(skinned_actor target_actor) {
+    origin = target_actor.drawable.model.translation + cgp::vec3{ 0.0f, 20.0f, 0.5f };
+    target = target_actor.drawable.model.translation + cgp::vec3{ 0.0f, 0.0f, 0.5f };  // desired swim-to point
+    speed  = 2.0f;                // units/sec
+    drawable.model.translation = origin;
 }
 
 /**
@@ -64,6 +73,13 @@ void shark_actor::animate(float t) {
     // Jaw
     float jaw = jaw_amplitude * std::max(0.f, std::sin(w*t));
     rotate_group("Jaw",{1,0,0}, jaw);
+}
+
+bool shark_actor::check_for_collision(skinned_actor actor){
+    auto T = actor.drawable.model.translation;
+    auto S = drawable.model.translation;
+    float d = cgp::norm(drawable.model.translation - actor.drawable.model.translation);
+    return d < actor.radius + radius;
 }
 
 

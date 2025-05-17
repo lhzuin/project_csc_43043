@@ -42,6 +42,9 @@ struct scene_structure : cgp::scene_inputs_generic {
 
 	shark_actor shark;
 
+	// Collision mechanism
+	bool   game_over   = false;
+
     
 
 	std::vector<cgp::mat4> shark_inverse_bind;
