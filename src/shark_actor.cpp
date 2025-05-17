@@ -77,7 +77,7 @@ bool shark_actor::check_for_collision(skinned_actor actor){
     auto T = actor.drawable.model.translation;
     auto S = drawable.model.translation;
     float d = cgp::norm(drawable.model.translation - actor.drawable.model.translation);
-    return d < actor.radius + radius;
+    return d < actor.res->radius + res->radius;
 }
 
 

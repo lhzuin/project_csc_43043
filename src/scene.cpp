@@ -56,7 +56,6 @@ void scene_structure::initialize()
         project::path+"assets/sea_turtle/sea_turtle.gltf",
         turtle_shader);
 
-	turtle.compute_radius();
     turtle.groups["RF"] = {  2,  3,  4,  5 };   // right-front flipper
     turtle.groups["RR"] = {  6,  7,  8,  9 };   // right-rear
     turtle.groups["LF"] = { 10, 11, 12, 13 };   // left-front
@@ -68,7 +67,6 @@ void scene_structure::initialize()
 	shark.initialize(turtle_shader,
     project::path+"assets/shark/scene.gltf",
     project::path+"assets/shark/textures/SharkBody.png");
-	shark.compute_radius();
 	shark.start_position(turtle);
 	
 	vec3 camera_pos = turtle_pos + vec3{ 0.0f, -0.5f, 0.3f };
