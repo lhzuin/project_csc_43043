@@ -1,5 +1,5 @@
+﻿// scene.hpp
 #pragma once
-
 
 #include "cgp/cgp.hpp"
 #include "environment.hpp"
@@ -8,83 +8,61 @@
 #include "skinned_actor.hpp"
 #include "shark_actor.hpp"
 
-// This definitions allow to use the structures: mesh, mesh_drawable, etc. without mentionning explicitly cgp::
-using cgp::mesh;
-using cgp::mesh_drawable;
-using cgp::vec3;
-using cgp::numarray;
-using cgp::timer_basic;
-
-
 // Variables associated to the GUI (buttons, etc)
 struct gui_parameters {
-	bool display_frame = true;
-	bool display_wireframe = false;
+    bool display_frame = true;
+    bool display_wireframe = false;
 };
 
 // The structure of the custom scene
 struct scene_structure : cgp::scene_inputs_generic {
-	
-	// ****************************** //
-	// Elements and shapes of the scene
-	// ****************************** //
-	camera_controller_orbit_euler camera_control;
-	camera_projection_perspective camera_projection;
-	window_structure window;
 
-	mesh_drawable global_frame;          // The standard global frame
-	environment_structure environment;   // Standard environment controler
-	input_devices inputs;                // Storage for inputs status (mouse, keyboard, window dimension)
-	gui_parameters gui;               // Standard GUI element storage
-	
-	skinned_actor turtle;
-	opengl_shader_structure turtle_shader;
+    // ****************************** //
+    // Elements and shapes of the scene
+    // ****************************** //
+    camera_controller_orbit_euler camera_control;
+    camera_projection_perspective camera_projection;
+    window_structure               window;
 
 	shark_actor shark;
 
 	// Collision mechanism
 	bool   game_over   = false;
+    mesh_drawable          global_frame;        // The standard global frame
+    environment_structure  environment;         // Standard environment controller
+    input_devices          inputs;              // Mouse, keyboard, window size…
+    gui_parameters         gui;                 // GUI state
 
-    
+    skinned_actor          turtle;
+    opengl_shader_structure turtle_shader;
 
-	std::vector<cgp::mat4> shark_inverse_bind;
-	std::vector<int>       shark_joint_node;     // skin -> node
-	std::vector<cgp::mat4> shark_uBones; 
-	
-	// ****************************** //
-	// Elements and shapes of the scene
-	// ****************************** //
+    skinned_actor          shark;
+    std::vector<cgp::mat4> shark_inverse_bind;
+    std::vector<int>       shark_joint_node;    // skin → node
+    std::vector<cgp::mat4> shark_uBones;
 
-	timer_basic timer;
+    timer_basic            timer;
 
-	mesh_drawable terrain;
-	mesh_drawable water;
-	mesh_drawable tree;
-	//turtle turtle_model; 
-	
-	mesh_drawable cube1;
-	mesh_drawable cube2;
+    mesh_drawable          terrain, water, tree;
+    mesh_drawable          cube1, cube2;
 
+    cgp::vec3 camera_offset;
 
-	// ****************************** //
-	// Functions
-	// ****************************** //
+    void handle_keyboard_movement();               // poll arrows each frame
+    void move_turtle(cgp::vec3 const& direction);  // slide turtle 
 
-	void initialize();    // Standard initialization to be called before the animation loop
-	void display_frame(); // The frame display to be called within the animation loop
-	void display_gui();   // The display of the GUI, also called within the animation loop
+    // ****************************** //
+    // Functions
+    // ****************************** //
 
+    void initialize();    // called once before the loop
+    void display_frame(); // called every frame to draw
+    void display_gui();   // ImGui widgets
 
-	void mouse_move_event();
-	void mouse_click_event();
-	void keyboard_event();
-	void idle_frame();
+    void mouse_move_event();
+    void mouse_click_event();
+    void keyboard_event();
+    void idle_frame();    // called every frame before display_frame()
 
-	void display_info();
-
+    void display_info();
 };
-
-
-
-
-
