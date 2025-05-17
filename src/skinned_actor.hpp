@@ -10,22 +10,30 @@
 namespace fs = std::filesystem;
 
 
+
+struct ActorResources {
+    /*=============== raw skin data straight from glTF ===============*/
+    std::vector<cgp::mat4> inverse_bind;   ///< |J| inverse-bind matrices
+    std::vector<int> joint_node;     ///< |J| skin->node map
+    
+
+    cgp::mesh_drawable prototype;       ///< the mesh we actually draw
+    cgp::numarray<cgp::uint4>        joint_index;
+    cgp::numarray<cgp::vec4>         joint_weight;
+    // Collision mechanism
+    cgp::mesh geometry;
+    float  radius;
+    void compute_radius(); 
+};
+
 /// Generic GPU–skinned model loaded from a glTF file.
 /// All concrete “animals” are just specialisations that fill in
 /// their own joint groups (flippers, tail, jaw, …).
 struct skinned_actor
 {
-    /*=============== raw skin data straight from glTF ===============*/
-    std::vector<cgp::mat4> inverse_bind;   ///< |J| inverse-bind matrices
-    std::vector<int>       joint_node;     ///< |J| skin->node map
     std::vector<cgp::mat4> uBones;         ///< |J| final pose (shader)
-
+    std::shared_ptr<ActorResources> res;   // shared data
     cgp::mesh_drawable     drawable;       ///< the mesh we actually draw
-
-    // Collision mechanism
-    cgp::mesh geometry;
-    float  radius;
-    void compute_radius(); 
 
     /*=============== high-level helpers =============================*/
     /// a named set of joints, e.g. "Tail", "Mouth", "RF" (right-front fin) …
