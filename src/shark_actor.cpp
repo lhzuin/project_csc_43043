@@ -1,6 +1,6 @@
 #include "shark_actor.hpp"
 #include "cgp/cgp.hpp"
-
+#include <random>
 /**
  * Convenience: load, setup texture & joint groups all at once.
  */
@@ -25,11 +25,18 @@ void shark_actor::initialize(cgp::opengl_shader_structure const& shader,
 }
 
 void shark_actor::start_position(skinned_actor target_actor) {
-    origin = target_actor.drawable.model.translation + cgp::vec3{ 0.0f, 20.0f, 0.5f };
-    target = target_actor.drawable.model.translation + cgp::vec3{ 0.0f, 0.0f, 0.5f };  // desired swim-to point
 
+    //random position for its origin and for its speed
+    static std::mt19937 engine{ std::random_device{}() };
+    std::uniform_real_distribution<float> dist_real(-10.0f, 10.0f);
+    std::uniform_real_distribution<float> speed_real(2.0f, 10.0f);
+    float rnd_f = dist_real(engine);
+    float speed_f = speed_real(engine);
+
+    origin = target_actor.drawable.model.translation + cgp::vec3{ rnd_f, -20.0f, 0.5f };
+    target = target_actor.drawable.model.translation + cgp::vec3{ rnd_f, 0.0f, 0.5f };  // desired swim-to point
     target = 2*target - origin;
-    speed  = 2.0f;                // units/sec
+    speed  = speed_f;                // units/sec
     drawable.model.translation = origin;
 }
 
