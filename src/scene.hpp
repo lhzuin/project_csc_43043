@@ -36,7 +36,6 @@ struct scene_structure : cgp::scene_inputs_generic {
     skinned_actor          turtle;
     opengl_shader_structure turtle_shader;
 
-    skinned_actor          shark;
     std::vector<cgp::mat4> shark_inverse_bind;
     std::vector<int>       shark_joint_node;    // skin → node
     std::vector<cgp::mat4> shark_uBones;

@@ -68,45 +68,15 @@ void scene_structure::initialize()
     turtle.groups["LF"] = { 10, 11, 12, 13 };   // left-front
     turtle.groups["LR"] = { 14, 15, 16, 17 };   // left-rear
 
-    shark.initialize(turtle_shader,
-    project::path+"assets/shark/scene.gltf",
-    project::path+"assets/shark/textures/SharkBody.png");
-	shark.start_position(turtle);
-    shark.load_from_gltf(project::path + "assets/shark/scene.gltf", turtle_shader);
-    shark.drawable.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/shark/textures/SharkBody.png", GL_REPEAT, GL_REPEAT);
-
-    shark.groups["Tail"] = {
-            6,   // TailMid
-            7, 8,  // TailTop
-            9, 10,   // TailBottom_08  + end bones – add more if you like
-    };
-    shark.groups["Body0"] = { 2 };        // Spine01_02  (près des branchies)
-    shark.groups["Body1"] = {
-        3, // Spine02_03
-        17,18,19 // First dorsal fin
-
-    };
-    shark.groups["Body2"] = {
-        4, // Spine03_04
-        15,16 // Pelvic fin
-    };
-    shark.groups["Body3"] = {
-        5, // Spine04_05 (pédoncule/tail)
-        11, 12, // Second dorsal fin
-        13, 14, // Bone under dorsal fin
-    };
-    shark.groups["FinL"] = { 20, 21, 22 };   // Pectoral L (01, 02)
-    shark.groups["FinR"] = { 25, 26, 27 };   // Pectoral R
-
-    shark.groups["Jaw"] = { 29, 30 };
     turtle.drawable.model.rotation = rotation_transform::from_axis_angle({ 1, 0, 0 }, Pi / 2.0f);
     vec3 turtle_pos = { 0.2f, 0.4f, 0.5f };
     turtle.drawable.model.translation = turtle_pos;
 
-
-    shark.drawable.model.rotation = rotation_transform::from_axis_angle({ 1, 0, 0 }, Pi / 2.0f);
-    vec3 shark_pos = turtle_pos + vec3{ 0.0f, 20.0f, 0.0f };
-    shark.drawable.model.translation = shark_pos;
+	shark.initialize(turtle_shader,
+    project::path+"assets/shark/scene.gltf",
+    project::path+"assets/shark/textures/SharkBody.png");
+	
+	shark.start_position(turtle);
 
     vec3 camera_pos = turtle_pos + vec3{ 0.0f, -0.5f, 0.3f };
     vec3 camera_target = turtle_pos + vec3{ 0.0f, 1.0f, 0.2f }; // small tilt down
@@ -179,6 +149,7 @@ void scene_structure::display_frame()
 		draw(shark.drawable, environment);
 
 		game_over = shark.check_for_collision(turtle);
+		handle_keyboard_movement();
 	}
 	else {
 		draw(turtle.drawable, environment);
@@ -240,7 +211,6 @@ void scene_structure::mouse_click_event()
 }
 void scene_structure::keyboard_event()
 {
-    //handle_keyboard_movement();
     camera_control.action_keyboard(environment.camera_view);
 }
 
@@ -268,7 +238,6 @@ void scene_structure::handle_keyboard_movement()
 
 void scene_structure::idle_frame()
 {
-    handle_keyboard_movement();
     camera_control.idle_frame(environment.camera_view);
 }
 

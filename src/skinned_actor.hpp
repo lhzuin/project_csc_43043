@@ -23,7 +23,10 @@ struct ActorResources {
     // Collision mechanism
     cgp::mesh geometry;
     float  radius;
+    cgp::vec3   half_extents;   // = (max − min)/2 in local space
+    cgp::vec3   center_offset;  // = (max + min)/2
     void compute_radius(); 
+    void compute_bounding_box();
 };
 
 /// Generic GPU–skinned model loaded from a glTF file.

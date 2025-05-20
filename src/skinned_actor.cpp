@@ -16,6 +16,17 @@ void ActorResources::compute_radius() {
 }
 
 
+void ActorResources::compute_bounding_box()
+{
+    cgp::vec3 pmin, pmax;
+    geometry.get_bounding_box_position(pmin, pmax);
+    half_extents   = (pmax - pmin) * 0.5f;
+    center_offset  = (pmax + pmin) * 0.5f;
+    std::cout << half_extents;
+    radius         = std::max({half_extents.x, half_extents.y, half_extents.z});
+}
+
+
 //-----------------------------------------------------------------------------
 // skinned_actor
 //-----------------------------------------------------------------------------
@@ -53,19 +64,7 @@ void skinned_actor::load_from_gltf(const std::string& file,
     const cgp::opengl_shader_structure& shader,
     int skin_id)
 {
-    /*
-    gltf_geometry_and_texture data = mesh_load_file_gltf(file);
-    geometry = data.geom;
-
-    drawable.initialize_data_on_gpu(data.geom, shader, data.tex);
-    add_skin_attributes(drawable, data.joint_index, data.joint_weight);
-
-    inverse_bind = std::move(data.inverse_bind);
-    joint_node   = std::move(data.joint_node);
-    uBones.resize(inverse_bind.size());
-    uBones.assign(inverse_bind.size(), cgp::mat4(1.0f));
-    */
-   // 2) lookup or fill the cache
+   // Lookup or fill the cache
     auto it = resource_cache.find(file);
     if(it == resource_cache.end()) {
         // load glTF once
@@ -86,6 +85,7 @@ void skinned_actor::load_from_gltf(const std::string& file,
           R->joint_index, R->joint_weight);
 
         R->compute_radius();
+        R->compute_bounding_box();
 
         resource_cache[file] = R;
         res = R;

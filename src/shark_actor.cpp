@@ -27,6 +27,8 @@ void shark_actor::initialize(cgp::opengl_shader_structure const& shader,
 void shark_actor::start_position(skinned_actor target_actor) {
     origin = target_actor.drawable.model.translation + cgp::vec3{ 0.0f, 20.0f, 0.5f };
     target = target_actor.drawable.model.translation + cgp::vec3{ 0.0f, 0.0f, 0.5f };  // desired swim-to point
+
+    target = 2*target - origin;
     speed  = 2.0f;                // units/sec
     drawable.model.translation = origin;
 }
@@ -74,10 +76,44 @@ void shark_actor::animate(float t) {
 }
 
 bool shark_actor::check_for_collision(skinned_actor actor){
-    auto T = actor.drawable.model.translation;
-    auto S = drawable.model.translation;
-    float d = cgp::norm(drawable.model.translation - actor.drawable.model.translation);
-    return d < actor.res->radius + res->radius;
+    // 1) Get shark‐local frame and world‐space centers of each actor’s bounding‐box center:
+    cgp::mat4 M1     = drawable.model.matrix();
+    cgp::vec3 C1     = (M1 * cgp::vec4(res->center_offset, 1)).xyz();
+    cgp::mat4 M2     = actor.drawable.model.matrix();
+    cgp::vec3 C2     = (M2 * cgp::vec4(actor.res->center_offset, 1)).xyz();
+
+    // 2) World‐space delta
+    cgp::vec3 d_world = C2 - C1;
+
+    // 3) Transform delta into shark’s local rotated+scaled space:
+    //    since M1 = T·R·S, we undo R·S by applying (R·S)⁻¹ = S⁻¹·Rᵀ
+    cgp::mat3 RS    = cgp::mat3(M1);         // contains rotation * scale
+    cgp::mat3 invRS = cgp::inverse(RS);      // S⁻¹·Rᵀ
+    cgp::vec3 d_loc = invRS * d_world;
+
+    // 4) Cylinder dimensions (shark) in its local space:
+    //    shrinkXY lets you “cut off” fins, shrinkZ shortens the height if desired
+    constexpr float shrinkXY = 0.7f;
+    constexpr float shrinkZ  = 0.8f;
+    cgp::vec3   E1     = res->half_extents;               // (Ex, Ey, Ez)
+    float  radius = std::max(E1.x, E1.y) * shrinkXY; // cylinder radius
+    float  halfH  = E1.z * shrinkZ;                  // cylinder half‐height
+
+    // 5) Box dimensions (other actor) in *shark‐local* axes:
+    //    we’ll treat it as an AABB in this same frame
+    cgp::vec3   E2     = actor.res->half_extents;         
+
+    // 6) Horizontal (X–Y) distance from cylinder axis to box:
+    //    if the box spans [–E2.x, +E2.x] in X, the closest X on the box to the axis is:
+    float dx = std::max(std::abs(d_loc.x) - E2.x, 0.0f);
+    float dy = std::max(std::abs(d_loc.y) - E2.y, 0.0f);
+    bool  overlapXY = (dx*dx + dy*dy) <= (radius*radius);
+
+    // 7) Vertical overlap (Z‐axis):
+    //    cylinder is [–halfH, +halfH], box is [d_loc.z–E2.z, d_loc.z+E2.z]
+    bool  overlapZ  = std::abs(d_loc.z) <= (halfH + E2.z);
+
+    return overlapXY && overlapZ;
 }
 
 
