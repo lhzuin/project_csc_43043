@@ -24,6 +24,14 @@ struct scene_structure : cgp::scene_inputs_generic {
     camera_projection_perspective camera_projection;
     window_structure               window;
 
+
+    std::vector<shark_actor> sharks;   // we’ll keep only one shark alive at a time
+    float                     shark_spawn_time = 0.0f;  // world time when current shark was born
+    float                     shark_lifespan = 10.0f; // seconds before we replace it
+
+    // helper to spawn one shark
+    void spawn_shark();
+
 	shark_actor shark;
 
 	// Collision mechanism
