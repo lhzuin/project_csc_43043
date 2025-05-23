@@ -174,15 +174,14 @@ void scene_structure::display_frame()
             // collision happened → game over logic remains as you had it
             game_over = true;
         }
+        handle_keyboard_movement();
 	}
 	else {
 		draw(turtle.drawable, environment);
-		//draw(shark.drawable, environment);
 		ImGui::Begin("Game"); 
 		ImGui::Text("💥 Turtle got eaten!");
 		if (ImGui::Button("Restart")) {
 			game_over = false;
-			//shark.start_position(turtle);
 			timer.update();
             initialize();      // reset everything
 		}
