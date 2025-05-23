@@ -28,13 +28,15 @@ void shark_actor::start_position(skinned_actor target_actor) {
 
     //random position for its origin and for its speed
     static std::mt19937 engine{ std::random_device{}() };
-    std::uniform_real_distribution<float> dist_real(-10.0f, 10.0f);
-    std::uniform_real_distribution<float> speed_real(2.0f, 10.0f);
+    std::uniform_real_distribution<float> dist_real(-5.0f, 5.0f);
+    std::uniform_real_distribution<float> dist_real2(-1.0f, 1.0f);
+    std::uniform_real_distribution<float> speed_real(2.0f, 8.0f);
     float rnd_f = dist_real(engine);
+    float rnd_f_target = dist_real(engine);
     float speed_f = speed_real(engine);
 
-    origin = target_actor.drawable.model.translation + cgp::vec3{ rnd_f, -20.0f, 0.5f };
-    target = target_actor.drawable.model.translation + cgp::vec3{ rnd_f, 0.0f, 0.5f };  // desired swim-to point
+    origin = target_actor.drawable.model.translation + cgp::vec3{ rnd_f, 20.0f, 0.5f };
+    target = target_actor.drawable.model.translation + cgp::vec3{ rnd_f_target, 0.0f, 0.5f };  // desired swim-to point
     target = 2*target - origin;
     speed  = speed_f;                // units/sec
     drawable.model.translation = origin;
