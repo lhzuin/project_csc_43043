@@ -144,3 +144,9 @@ void shark_actor::align_to(cgp::vec3 const& dir) {
 }
 
 
+bool shark_actor::check_for_end_of_life(){
+    float tol = 0.5;
+    return cgp::norm(drawable.model.translation - target) <= tol;
+}
+
+

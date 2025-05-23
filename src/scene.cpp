@@ -105,8 +105,6 @@ void scene_structure::spawn_shark()
         project::path + "assets/shark/textures/SharkBody.png");
     s.start_position(turtle);
     sharks.push_back(std::move(s));
-    // record the spawn time so we know when to retire it
-    shark_spawn_time = timer.t;
 }
 
 //------------------------------------------------------------------------------
@@ -164,9 +162,7 @@ void scene_structure::display_frame()
 
         // only retire & respawn if *not* eaten:
         if (!sh.check_for_collision(turtle)) {
-            float age = timer.t - shark_spawn_time;
-            if (age > shark_lifespan) {
-                // time’s up: spawn a fresh shark
+            if(sh.check_for_end_of_life()){
                 spawn_shark();
             }
         }

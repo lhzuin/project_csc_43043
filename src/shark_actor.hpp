@@ -47,6 +47,8 @@ struct shark_actor : public skinned_actor {
 
      bool check_for_collision(skinned_actor actor);
 
+     bool check_for_end_of_life();
+
 private:
     /// Align the mesh forward (-Y) to given direction
     void align_to(cgp::vec3 const& dir);
