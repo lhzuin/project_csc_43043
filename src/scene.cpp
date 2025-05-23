@@ -87,6 +87,8 @@ void scene_structure::initialize()
         4,
         image_format::jpg
     );
+
+    spawn_shark();
     
 }
 
@@ -101,39 +103,6 @@ void scene_structure::spawn_shark()
     s.initialize(turtle_shader,
         project::path + "assets/shark/scene.gltf",
         project::path + "assets/shark/textures/SharkBody.png");
-    s.start_position(turtle);
-    s.load_from_gltf(project::path + "assets/shark/scene.gltf", turtle_shader);
-    s.drawable.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/shark/textures/SharkBody.png", GL_REPEAT, GL_REPEAT);
-    
-    s.groups["Tail"] = {
-            6,   // TailMid
-            7, 8,  // TailTop
-            9, 10,   // TailBottom_08  + end bones – add more if you like
-    };
-    s.groups["Body0"] = { 2 };        // Spine01_02  (près des branchies)
-    s.groups["Body1"] = {
-        3, // Spine02_03
-        17,18,19 // First dorsal fin
-    
-    };
-    s.groups["Body2"] = {
-        4, // Spine03_04
-        15,16 // Pelvic fin
-    };
-    s.groups["Body3"] = {
-        5, // Spine04_05 (pédoncule/tail)
-        11, 12, // Second dorsal fin
-        13, 14, // Bone under dorsal fin
-    };
-    s.groups["FinL"] = { 20, 21, 22 };   // Pectoral L (01, 02)
-    s.groups["FinR"] = { 25, 26, 27 };   // Pectoral R
-    
-    s.groups["Jaw"] = { 29, 30 };
-
-    s.drawable.model.rotation = rotation_transform::from_axis_angle({ 1, 0, 0 }, Pi / 2.0f);
-    vec3 turtle_pos = { 0.2f, 0.4f, 0.5f };
-    vec3 shark_pos = turtle_pos + vec3{ 0.0f, 20.0f, 0.0f };
-    s.drawable.model.translation = shark_pos;
     s.start_position(turtle);
     sharks.push_back(std::move(s));
     // record the spawn time so we know when to retire it
