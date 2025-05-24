@@ -5,6 +5,7 @@
 
 /// A specialized skinned_actor with autonomous swimming behavior
 struct npc_actor : public skinned_actor {
+    virtual ~npc_actor() = default;
     float        speed             = 1.0f;      ///< units per second
     cgp::vec3    origin            {0,0,0};     ///< current position
     cgp::vec3    target            {0,0,0};     ///< destination point

@@ -1,5 +1,6 @@
-src//skinned_actor.o: src//skinned_actor.cpp src/skinned_actor.hpp \
-  ../../cgp/library/cgp/cgp.hpp ../../cgp/library/cgp/cgp_parameters.hpp \
+src//actors/skinned_actor.o: src//actors/skinned_actor.cpp \
+  src//actors/skinned_actor.hpp ../../cgp/library/cgp/cgp.hpp \
+  ../../cgp/library/cgp/cgp_parameters.hpp \
   ../../cgp/library/cgp/01_base/base.hpp \
   ../../cgp/library/cgp/01_base/error/error.hpp \
   ../../cgp/library/cgp/01_base/basic_types/basic_types.hpp \
@@ -164,9 +165,9 @@ src//skinned_actor.o: src//skinned_actor.cpp src/skinned_actor.hpp \
   ../../cgp/library/cgp/20_format_parser/mesh_loader/obj_advanced/obj_advanced.hpp \
   ../../cgp/library/cgp/21_scene_project_helper/scene_project_helper.hpp \
   ../../cgp/library/cgp/21_scene_project_helper/path/path.hpp \
-  src/gltf_loader.hpp external/tinygltf/tiny_gltf.h \
-  src/gpu_skin_helper.hpp
-src/skinned_actor.hpp:
+  src//actors/../loader/gltf_loader.hpp external/tinygltf/tiny_gltf.h \
+  src//actors/../loader/gpu_skin_helper.hpp
+src//actors/skinned_actor.hpp:
 ../../cgp/library/cgp/cgp.hpp:
 ../../cgp/library/cgp/cgp_parameters.hpp:
 ../../cgp/library/cgp/01_base/base.hpp:
@@ -333,6 +334,6 @@ src/skinned_actor.hpp:
 ../../cgp/library/cgp/20_format_parser/mesh_loader/obj_advanced/obj_advanced.hpp:
 ../../cgp/library/cgp/21_scene_project_helper/scene_project_helper.hpp:
 ../../cgp/library/cgp/21_scene_project_helper/path/path.hpp:
-src/gltf_loader.hpp:
+src//actors/../loader/gltf_loader.hpp:
 external/tinygltf/tiny_gltf.h:
-src/gpu_skin_helper.hpp:
+src//actors/../loader/gpu_skin_helper.hpp:

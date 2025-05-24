@@ -1,7 +1,7 @@
 #include "turtle_actor.hpp"
 #include "cgp/cgp.hpp"
 #include <random>
-#include "environment.hpp"
+#include "../environment.hpp"
 /**
  * Convenience: load, setup texture & joint groups all at once.
  */

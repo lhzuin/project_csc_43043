@@ -3,7 +3,7 @@
 #include "npc_actor.hpp"
 #include "cgp/cgp.hpp"
 
-struct shark_actor : public npc_actor {
+struct shark_actor final : public npc_actor {
     // ----- internal animation parameters -----
     float        body_frequency    = 0.2f;      ///< wave freq (Hz)
     float        body_amplitude    = 0.16f;     ///< wave amplitude

@@ -3,11 +3,11 @@
 
 #include "cgp/cgp.hpp"
 #include "environment.hpp"
-#include "gltf_loader.hpp"
-#include "gpu_skin_helper.hpp" 
-#include "skinned_actor.hpp"
-#include "shark_actor.hpp"
-#include "turtle_actor.hpp"
+#include "loader/gltf_loader.hpp"
+#include "loader/gpu_skin_helper.hpp" 
+#include "actors/skinned_actor.hpp"
+#include "actors/shark_actor.hpp"
+#include "actors/turtle_actor.hpp"
 
 // Variables associated to the GUI (buttons, etc)
 struct gui_parameters {

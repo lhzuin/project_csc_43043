@@ -1,13 +1,12 @@
 #pragma once
 #include "cgp/cgp.hpp"
-#include "gltf_loader.hpp"
-#include "gpu_skin_helper.hpp"
+#include "../loader/gltf_loader.hpp"
+#include "../loader/gpu_skin_helper.hpp"
 #include <unordered_map>
 #include <vector>
 #include <string_view>
 
 #include <filesystem>
-namespace fs = std::filesystem;
 
 
 
@@ -34,6 +33,7 @@ struct ActorResources {
 /// their own joint groups (flippers, tail, jaw, …).
 struct skinned_actor
 {
+    virtual ~skinned_actor() = default;
     std::vector<cgp::mat4> uBones;         ///< |J| final pose (shader)
     std::shared_ptr<ActorResources> res;   // shared data
     cgp::mesh_drawable     drawable;       ///< the mesh we actually draw
@@ -54,8 +54,7 @@ struct skinned_actor
     /*=============== construction ==================================*/
     /// load everything from disk, send mesh to the GPU, keep skin data
     void load_from_gltf(const std::string& file,
-                        const cgp::opengl_shader_structure& shader,
-                        int skin_id = 0);
+                        const cgp::opengl_shader_structure& shader);
 
     /**
      * Convenience: load, setup texture & joint groups all at once.

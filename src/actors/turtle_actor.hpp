@@ -4,7 +4,7 @@
 #include "cgp/cgp.hpp"
 
 /// A specialized skinned_actor with autonomous swimming behavior
-struct turtle_actor : public skinned_actor {
+struct turtle_actor final: public skinned_actor {
     // ----- internal animation parameters -----
     float        front_frequency    = 2.0f;      ///< wave freq (Hz)
     float        front_amplitude    = 0.1f;     ///< wave amplitude

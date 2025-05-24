@@ -1,6 +1,6 @@
 #include "scene.hpp"
-#include "animated_texture.hpp"
-#include "shark_actor.hpp"
+#include "loader/animated_texture.hpp"
+#include "actors/shark_actor.hpp"
 
 #include <GLFW/glfw3.h> 
 

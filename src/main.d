@@ -164,10 +164,11 @@ src//main.o: src//main.cpp ../../cgp/library/cgp/cgp.hpp \
   ../../cgp/library/cgp/20_format_parser/mesh_loader/obj_advanced/obj_advanced.hpp \
   ../../cgp/library/cgp/21_scene_project_helper/scene_project_helper.hpp \
   ../../cgp/library/cgp/21_scene_project_helper/path/path.hpp \
-  src/environment.hpp src/scene.hpp src/gltf_loader.hpp \
-  external/tinygltf/tiny_gltf.h src/gpu_skin_helper.hpp \
-  src/skinned_actor.hpp src/shark_actor.hpp src/npc_actor.hpp \
-  src/turtle_actor.hpp
+  src/environment.hpp src/scene.hpp src/loader/gltf_loader.hpp \
+  external/tinygltf/tiny_gltf.h src/loader/gpu_skin_helper.hpp \
+  src/actors/skinned_actor.hpp src/actors/../loader/gltf_loader.hpp \
+  src/actors/../loader/gpu_skin_helper.hpp src/actors/shark_actor.hpp \
+  src/actors/npc_actor.hpp src/actors/turtle_actor.hpp
 ../../cgp/library/cgp/cgp.hpp:
 ../../cgp/library/cgp/cgp_parameters.hpp:
 ../../cgp/library/cgp/01_base/base.hpp:
@@ -336,10 +337,12 @@ src//main.o: src//main.cpp ../../cgp/library/cgp/cgp.hpp \
 ../../cgp/library/cgp/21_scene_project_helper/path/path.hpp:
 src/environment.hpp:
 src/scene.hpp:
-src/gltf_loader.hpp:
+src/loader/gltf_loader.hpp:
 external/tinygltf/tiny_gltf.h:
-src/gpu_skin_helper.hpp:
-src/skinned_actor.hpp:
-src/shark_actor.hpp:
-src/npc_actor.hpp:
-src/turtle_actor.hpp:
+src/loader/gpu_skin_helper.hpp:
+src/actors/skinned_actor.hpp:
+src/actors/../loader/gltf_loader.hpp:
+src/actors/../loader/gpu_skin_helper.hpp:
+src/actors/shark_actor.hpp:
+src/actors/npc_actor.hpp:
+src/actors/turtle_actor.hpp:

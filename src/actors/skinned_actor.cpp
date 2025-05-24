@@ -61,8 +61,7 @@ void skinned_actor::upload_pose_to_gpu() const
 
 
 void skinned_actor::load_from_gltf(const std::string& file,
-    const cgp::opengl_shader_structure& shader,
-    int skin_id)
+    const cgp::opengl_shader_structure& shader)
 {
    // Lookup or fill the cache
     auto it = resource_cache.find(file);
