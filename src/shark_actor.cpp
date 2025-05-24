@@ -82,6 +82,7 @@ void shark_actor::animate(float t) {
     // Jaw
     float jaw = jaw_amplitude * std::max(0.f, std::sin(w*t));
     rotate_group("Jaw",{1,0,0}, jaw);
+    upload_pose_to_gpu();
 }
 
 bool shark_actor::check_for_collision(skinned_actor actor){

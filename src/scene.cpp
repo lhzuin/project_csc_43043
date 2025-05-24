@@ -50,30 +50,20 @@ void scene_structure::initialize()
     // Create the shapes seen in the 3D scene
     // ********************************************** //
 
-    float L = 5.0f;
-
-    auto const turtle_data = mesh_load_file_gltf(project::path + "assets/sea_turtle/sea_turtle.gltf");
     
     turtle_shader.load(
         project::path + "shaders/turtle/turtle.vert.glsl",
         project::path + "shaders/mesh/custom_mesh.frag.glsl");
 
-    turtle.load_from_gltf(
-        project::path + "assets/sea_turtle/sea_turtle.gltf",
-        turtle_shader);
+    turtle.initialize(turtle_shader,
+            project::path + "assets/sea_turtle/sea_turtle.gltf",
+            project::path + "assets/sea_turtle/textures/Tortue_PBRMaterial_baseColor.png");
+
     
-    turtle.upload_pose_to_gpu();
-    turtle.groups["RF"] = { 2,  3,  4,  5 };   // right-front flipper
-    turtle.groups["RR"] = { 6,  7,  8,  9 };   // right-rear
-    turtle.groups["LF"] = { 10, 11, 12, 13 };   // left-front
-    turtle.groups["LR"] = { 14, 15, 16, 17 };   // left-rear
-
-    turtle.drawable.model.rotation = rotation_transform::from_axis_angle({ 1, 0, 0 }, Pi / 2.0f);
-    vec3 turtle_pos = { 0.2f, 0.4f, 0.5f };
-    turtle.drawable.model.translation = turtle_pos;
-
-    vec3 camera_pos = turtle_pos + vec3{ 0.0f, -0.5f, 0.3f };
-    vec3 camera_target = turtle_pos + vec3{ 0.0f, 1.0f, 0.2f }; // small tilt down
+    turtle.start_position();
+    
+    vec3 camera_pos = turtle.drawable.model.translation + vec3{ 0.0f, -0.5f, 0.3f };
+    vec3 camera_target = turtle.drawable.model.translation + vec3{ 0.0f, 1.0f, 0.2f }; // small tilt down
 
     camera_control.look_at(
         camera_pos,
@@ -95,34 +85,18 @@ void scene_structure::initialize()
 
 void scene_structure::spawn_shark()
 {
-    // clear out old shark(s)
-    sharks.clear();
-
-    // create a brand‐new shark and give it a random start
-    shark_actor s;
-    s.initialize(turtle_shader,
-        project::path + "assets/shark/scene.gltf",
-        project::path + "assets/shark/textures/SharkBody.png");
-    s.start_position(turtle);
-    sharks.push_back(std::move(s));
+    if (sharks.size() == 0){
+        shark_actor s;
+        s.initialize(turtle_shader,
+            project::path + "assets/shark/scene.gltf",
+            project::path + "assets/shark/textures/SharkBody.png");
+        sharks.push_back(std::move(s));
+    }
+    sharks[0].start_position(turtle);
 }
 
 //------------------------------------------------------------------------------
 // Move the turtle and immediately re-anchor the camera
-void scene_structure::move_turtle(vec3 const& direction)
-{
-    // 1) shift the turtle’s position
-    turtle.drawable.model.translation += direction;
-    
-    // 2) re-compute camera to keep the same offset
-    vec3 pos = turtle.drawable.model.translation;
-    
-    ////camera_control.look_at(pos + camera_offset, pos, { 0,0,1 });
-    //camera_control.look_at(
-    //    turtle.drawable.model.translation + camera_offset,
-    //    turtle.drawable.model.translation, { 0,0,1 }
-    //);
-}
 
 // This function is called each frame to draw the scene
 void scene_structure::display_frame()
@@ -140,15 +114,8 @@ void scene_structure::display_frame()
 
 		
 		/* ------------ Turtle -------------------------------------- */
-		float aFront = 0.1f * std::sin( 2.0f * timer.t );        // front pair
-		float aRear  = 0.1f * std::sin( 2.0f * timer.t + cgp::Pi ); // rear 180°
 
-		turtle.reset_pose();
-		turtle.rotate_group("RF", {0,0,1},  aFront);
-		turtle.rotate_group("LF", {0,0,1},  aFront);
-		turtle.rotate_group("RR", {0,0,1},  aRear );
-		turtle.rotate_group("LR", {0,0,1},  aRear );
-		turtle.upload_pose_to_gpu();
+		turtle.animate(timer.t);
 		draw(turtle.drawable, environment);          
 			
 
@@ -157,7 +124,6 @@ void scene_structure::display_frame()
         shark_actor& sh = sharks[0];
         sh.update_position(dt);
         sh.animate(timer.t);
-        sh.upload_pose_to_gpu();
         draw(sh.drawable, environment);
 
         // only retire & respawn if *not* eaten:
@@ -206,16 +172,16 @@ void scene_structure::display_gui()
     const float button_step = 0.2f;  // movement per click
 
     if (ImGui::ArrowButton("##Up", ImGuiDir_Up))
-        move_turtle({ 0, +button_step, 0 });
+        turtle.move({ 0, +button_step, 0 });
     ImGui::SameLine();
     if (ImGui::ArrowButton("##Left", ImGuiDir_Left))
-        move_turtle({ -button_step, 0, 0 });
+        turtle.move({ -button_step, 0, 0 });
     ImGui::SameLine();
     if (ImGui::ArrowButton("##Right", ImGuiDir_Right))
-        move_turtle({ +button_step, 0, 0 });
+        turtle.move({ +button_step, 0, 0 });
     ImGui::SameLine();
     if (ImGui::ArrowButton("##Down", ImGuiDir_Down))
-        move_turtle({ 0, -button_step, 0 });
+        turtle.move({ 0, -button_step, 0 });
 }
 
 
@@ -251,7 +217,7 @@ void scene_structure::handle_keyboard_movement()
 
     if (!equals_exact(delta, origin)) {
         delta = normalize(delta) * speed;
-        move_turtle(delta);
+        turtle.move(delta);
     }
 }
 

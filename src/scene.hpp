@@ -7,6 +7,7 @@
 #include "gpu_skin_helper.hpp" 
 #include "skinned_actor.hpp"
 #include "shark_actor.hpp"
+#include "turtle_actor.hpp"
 
 // Variables associated to the GUI (buttons, etc)
 struct gui_parameters {
@@ -39,7 +40,7 @@ struct scene_structure : cgp::scene_inputs_generic {
     input_devices          inputs;              // Mouse, keyboard, window size…
     gui_parameters         gui;                 // GUI state
 
-    skinned_actor          turtle;
+    turtle_actor          turtle;
     opengl_shader_structure turtle_shader;
 
     std::vector<cgp::mat4> shark_inverse_bind;
@@ -54,7 +55,6 @@ struct scene_structure : cgp::scene_inputs_generic {
     cgp::vec3 camera_offset;
 
     void handle_keyboard_movement();               // poll arrows each frame
-    void move_turtle(cgp::vec3 const& direction);  // slide turtle 
 
     // ****************************** //
     // Functions
