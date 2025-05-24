@@ -15,12 +15,9 @@ struct turtle_actor : public skinned_actor {
 
     gltf_geometry_and_texture data;
 
-    /**
-     * Convenience: load, setup texture & joint groups all at once.
-     */
     void initialize(cgp::opengl_shader_structure const& shader,
                     std::string const& gltf_file,
-                    std::string const& texture_file);
+                    std::string const& texture_file) override;
 
     /**
      * Initializes position and target for the shark
@@ -33,14 +30,7 @@ struct turtle_actor : public skinned_actor {
      */
     void move(cgp::vec3 const& direction);
 
-    /**
-     * Generate wiggling animation on body, tail, fins and jaw.
-     */
-    void animate(float t);
-
-    /**
-     * Checks for collision between the shark and another skinned_actor
-     */
-     bool check_for_collision(skinned_actor actor);
+    bool check_for_collision(skinned_actor const& actor);
+    void animate(float t) override;
 };     
 

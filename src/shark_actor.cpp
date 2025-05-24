@@ -24,7 +24,7 @@ void shark_actor::initialize(cgp::opengl_shader_structure const& shader,
     };
 }
 
-void shark_actor::start_position(skinned_actor target_actor) {
+void shark_actor::start_position(skinned_actor const& target_actor) {
 
     //random position for its origin and for its speed
     static std::mt19937 engine{ std::random_device{}() };
@@ -40,21 +40,6 @@ void shark_actor::start_position(skinned_actor target_actor) {
     target = 2*target - origin;
     speed  = speed_f;                // units/sec
     drawable.model.translation = origin;
-}
-
-/**
- * Swim movement + directional alignment.
- */
-void shark_actor::update_position(float dt)
-{
-    cgp::vec3 dir = target - origin;
-    float dist = cgp::norm(dir);
-    if (dist < 1e-4f) return;
-
-    dir /= dist;            // normalize
-    origin += dir * speed * dt;
-    drawable.model.translation = origin;
-    align_to(dir);
 }
 
 /**
@@ -85,7 +70,7 @@ void shark_actor::animate(float t) {
     upload_pose_to_gpu();
 }
 
-bool shark_actor::check_for_collision(skinned_actor actor){
+bool shark_actor::check_for_collision(skinned_actor  const& actor){
     // 1) Get shark‐local frame and world‐space centers of each actor’s bounding‐box center:
     cgp::mat4 M1     = drawable.model.matrix();
     cgp::vec3 C1     = (M1 * cgp::vec4(res->center_offset, 1)).xyz();
@@ -142,12 +127,6 @@ void shark_actor::align_to(cgp::vec3 const& dir) {
         float    angle = acos(cosang);
         drawable.model.rotation = cgp::rotation_transform::from_axis_angle(axis, angle);
     }
-}
-
-
-bool shark_actor::check_for_end_of_life(){
-    float tol = 0.5;
-    return cgp::norm(drawable.model.translation - target) <= tol;
 }
 
 

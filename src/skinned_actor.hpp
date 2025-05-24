@@ -56,4 +56,16 @@ struct skinned_actor
     void load_from_gltf(const std::string& file,
                         const cgp::opengl_shader_structure& shader,
                         int skin_id = 0);
+
+    /**
+     * Convenience: load, setup texture & joint groups all at once.
+     */
+    virtual void initialize(cgp::opengl_shader_structure const& shader,
+                    std::string const& gltf_file,
+                    std::string const& texture_file) = 0;
+
+    /**
+     * Generate wiggling animation on body, tail, fins and jaw.
+     */
+    virtual void animate(float t) = 0;
 };

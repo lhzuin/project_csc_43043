@@ -1,5 +1,5 @@
-src//shark_actor.o: src//shark_actor.cpp src/shark_actor.hpp \
-  src/npc_actor.hpp src/skinned_actor.hpp ../../cgp/library/cgp/cgp.hpp \
+src//npc_actor.o: src//npc_actor.cpp src/npc_actor.hpp \
+  src/skinned_actor.hpp ../../cgp/library/cgp/cgp.hpp \
   ../../cgp/library/cgp/cgp_parameters.hpp \
   ../../cgp/library/cgp/01_base/base.hpp \
   ../../cgp/library/cgp/01_base/error/error.hpp \
@@ -167,7 +167,6 @@ src//shark_actor.o: src//shark_actor.cpp src/shark_actor.hpp \
   ../../cgp/library/cgp/21_scene_project_helper/path/path.hpp \
   src/gltf_loader.hpp external/tinygltf/tiny_gltf.h \
   src/gpu_skin_helper.hpp
-src/shark_actor.hpp:
 src/npc_actor.hpp:
 src/skinned_actor.hpp:
 ../../cgp/library/cgp/cgp.hpp:
