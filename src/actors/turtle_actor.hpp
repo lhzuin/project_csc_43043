@@ -1,7 +1,10 @@
-// shark_actor.hpp
+// turtle_actor.hpp
 #pragma once
 #include "skinned_actor.hpp"
 #include "cgp/cgp.hpp"
+
+
+
 
 /// A specialized skinned_actor with autonomous swimming behavior
 struct turtle_actor final: public skinned_actor {
@@ -12,7 +15,15 @@ struct turtle_actor final: public skinned_actor {
     float        rear_frequency      = 2.0f;     ///< fin beat amplitude
     float aFront;
     float aRear;
+    
+    //rotation_transform base_rotation;
+    cgp::rotation_transform base_rotation; // cgp::rotation_transform::from_axis_angle({ 1, 0, 0 }, Pi / 2.0f);
 
+    // --- new for smoothing ---
+    float current_yaw = 0.0f;
+    float current_pitch = 0.0f;
+    float smoothing = 0.15f;  // how fast to catch up: 0 < s <= 1
+   
     gltf_geometry_and_texture data;
 
     void initialize(cgp::opengl_shader_structure const& shader,

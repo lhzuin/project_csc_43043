@@ -113,7 +113,7 @@ void animation_loop()
 
 	float const time_interval = fps_record.update();
 	if (fps_record.event) {
-		std::string const title = "CGP Display - " + str(fps_record.fps) + " fps";
+		std::string const title = "Turtle ride - " + str(fps_record.fps) + " fps";
 		glfwSetWindowTitle(scene.window.glfw_window, title.c_str());
 	}
 
