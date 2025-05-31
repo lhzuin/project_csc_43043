@@ -35,6 +35,7 @@ struct scene_structure : cgp::scene_inputs_generic {
 
 	// Collision mechanism
 	bool   game_over   = false;
+    bool   game_started = false;                //to control the main game menu
     mesh_drawable          global_frame;        // The standard global frame
     environment_structure  environment;         // Standard environment controller
     input_devices          inputs;              // Mouse, keyboard, window size…

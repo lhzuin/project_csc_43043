@@ -98,67 +98,181 @@ void scene_structure::spawn_shark()
 //------------------------------------------------------------------------------
 // Move the turtle and immediately re-anchor the camera
 
-// This function is called each frame to draw the scene
 void scene_structure::display_frame()
 {
-    // Set the light to the current position of the camera
-	environment.light = camera_control.camera_model.position();
+    // 1) Set the light position to follow the camera
+    environment.light = camera_control.camera_model.position();
 
-	if (!game_over) {
-		float t_prev = timer.t;
+    // 2) If the game has NOT started yet, show the full‐screen "Welcome" menu
+    if (!game_started) {
 
-		// advance clock
-		timer.update();
-		float dt = timer.t - t_prev;
-		environment.uniform_generic.uniform_float["time"] = timer.t;
+        // ─────────────────────────────────────────────────────────────────
+        // 2a) Force a full‐screen, borderless ImGui window:
+        // ─────────────────────────────────────────────────────────────────
+        ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
+        ImGui::SetNextWindowSize(ImVec2((float)window.width, (float)window.height));
 
-		
-		/* ------------ Turtle -------------------------------------- */
+        ImGuiWindowFlags menu_flags = 
+            ImGuiWindowFlags_NoTitleBar
+          | ImGuiWindowFlags_NoResize
+          | ImGuiWindowFlags_NoMove
+          | ImGuiWindowFlags_NoScrollbar
+          | ImGuiWindowFlags_NoSavedSettings
+          | ImGuiWindowFlags_NoFocusOnAppearing;
 
-		turtle.animate(timer.t);
-		draw(turtle.drawable, environment);          
-			
+        ImGui::Begin("StartMenu", nullptr, menu_flags);
 
-		/* ======== SHARK ======================================================= */
-        // only one shark in the vector:
+        // ─────────────────────────────────────────────────────────────────
+        // 2b) Get window dimensions, measure text size, and center both:
+        // ─────────────────────────────────────────────────────────────────
+        float window_w = (float)window.width;
+        float window_h = (float)window.height;
+
+        // The welcome text and button label:
+        std::string menu_text    = "Welcome to Turtle Ride!";
+        std::string button_label = "Play";
+
+        // Measure the width/height of the text in pixels
+        ImVec2 text_size = ImGui::CalcTextSize(menu_text.c_str());
+
+        // Place the text at ~45% of window height, horizontally centered
+        float text_x = (window_w - text_size.x) * 0.5f;
+        float text_y = window_h * 0.45f;
+
+        ImGui::SetCursorPosX(text_x);
+        ImGui::SetCursorPosY(text_y);
+        ImGui::Text("%s", menu_text.c_str());
+
+        // ─────────────────────────────────────────────────────────────────
+        // 2c) Place a button just below the text, centered
+        // ─────────────────────────────────────────────────────────────────
+        ImVec2 button_size = ImVec2(160.0f, 60.0f);
+        float   button_x    = (window_w - button_size.x) * 0.5f;
+        float   button_y    = text_y + text_size.y + 40.0f;
+
+        ImGui::SetCursorPosX(button_x);
+        ImGui::SetCursorPosY(button_y);
+        if (ImGui::Button(button_label.c_str(), button_size)) {
+            // When “Play” is clicked:
+            game_started = true;
+
+            // Reset game_over in case it was true
+            game_over = false;
+
+            // Re‐initialize anything needed for a new playthrough:
+            // Here, we’ll just call initialize() to reset turtle, sharks, timer, etc.
+            // If you only want to reset positions & scores (and not re‐upload GPU data),
+            // move that logic into a separate helper, e.g. reset_for_new_playthrough().
+            initialize();
+
+            // Ensure the timer does not jump. Immediately update it so dt calculations
+            // start fresh from zero:
+            timer.update();
+        }
+
+        ImGui::End();
+
+        // ─────────────────────────────────────────────────────────────────
+        // Because we’re still on the menu, we skip all gameplay updates/draws.
+        // ─────────────────────────────────────────────────────────────────
+        return;
+    }
+
+
+    // 3) If the game HAS started but not yet over ⇒ normal gameplay:
+    if (game_started && !game_over) {
+
+        // Advance your internal clock & animate uniforms
+        float t_prev = timer.t;
+        timer.update();
+        float dt = timer.t - t_prev;
+        environment.uniform_generic.uniform_float["time"] = timer.t;
+
+        /* ======== TURTLE ======== */
+        turtle.animate(timer.t);
+        draw(turtle.drawable, environment);
+
+        /* ======== SHARK ======== */
         shark_actor& sh = sharks[0];
         sh.update_position(dt);
         sh.animate(timer.t);
         draw(sh.drawable, environment);
 
-        // only retire & respawn if *not* eaten:
+        // Collision check: if not eaten, allow respawn; otherwise set game_over = true
         if (!sh.check_for_collision(turtle)) {
-            if(sh.check_for_end_of_life()){
+            if (sh.check_for_end_of_life()) {
                 spawn_shark();
             }
         }
         else {
-            // collision happened → game over logic remains as you had it
+            // Turtle was caught ⇒ switch to game‐over state
             game_over = true;
         }
+
+        // Handle turtle movement from keyboard arrows
         handle_keyboard_movement();
-	}
-	else {
-		draw(turtle.drawable, environment);
-		ImGui::Begin("Game"); 
-		ImGui::Text("💥 Turtle got eaten!");
-		if (ImGui::Button("Restart")) {
-			game_over = false;
-			timer.update();
-            initialize();      // reset everything
-		}
-		ImGui::End();
-	}
+    }
+    // 4) If the game HAS started and is OVER ⇒ show “Game Over” screen
+    else if (game_started && game_over) {
+        // We still draw the turtle (so the user sees it in its final position)
+        draw(turtle.drawable, environment);
 
+        // Full‐screen modal window for “Game Over”
+        ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
+        ImGui::SetNextWindowSize(ImVec2((float)window.width, (float)window.height));
 
+        ImGuiWindowFlags over_flags =
+            ImGuiWindowFlags_NoTitleBar
+          | ImGuiWindowFlags_NoResize
+          | ImGuiWindowFlags_NoMove
+          | ImGuiWindowFlags_NoScrollbar
+          | ImGuiWindowFlags_NoSavedSettings
+          | ImGuiWindowFlags_NoFocusOnAppearing;
 
-	// conditional display of the global frame (set via the GUI)
-	if (gui.display_frame)
-		draw(global_frame, environment);
-	if (gui.display_wireframe) {
-		draw_wireframe(shark.drawable, environment);
-		draw_wireframe(turtle.drawable, environment);
-	}
+        ImGui::Begin("GameOverMenu", nullptr, over_flags);
+
+        // Center the “caught” message & Restart button
+        float window_w = (float)window.width;
+        float window_h = (float)window.height;
+
+        std::string over_text    = "Oh no, we have been caught!";
+        std::string restart_text = "Play Again";
+
+        ImVec2 text_size = ImGui::CalcTextSize(over_text.c_str());
+        float   text_x    = (window_w - text_size.x) * 0.5f;
+        float   text_y    = window_h * 0.45f;
+
+        ImGui::SetCursorPosX(text_x);
+        ImGui::SetCursorPosY(text_y);
+        ImGui::Text("%s", over_text.c_str());
+
+        ImVec2 button_size = ImVec2(160.0f, 60.0f);
+        float   button_x    = (window_w - button_size.x) * 0.5f;
+        float   button_y    = text_y + text_size.y + 40.0f;
+
+        ImGui::SetCursorPosX(button_x);
+        ImGui::SetCursorPosY(button_y);
+        if (ImGui::Button(restart_text.c_str(), button_size)) {
+            // Reset everything for a new playthrough:
+            game_over    = false;
+            game_started = true;   // already true, but keep for clarity
+
+            initialize();
+            timer.update();
+        }
+
+        ImGui::End();
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 5) Draw any optional debug overlays (wireframe, global frame) as before
+    // ─────────────────────────────────────────────────────────────────────────
+    if (gui.display_frame)
+        draw(global_frame, environment);
+    if (gui.display_wireframe) {
+        draw_wireframe(shark.drawable, environment);
+        draw_wireframe(turtle.drawable, environment);
+    }
 }
 
 void scene_structure::display_gui()
