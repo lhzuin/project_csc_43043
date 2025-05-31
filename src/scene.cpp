@@ -62,14 +62,27 @@ void scene_structure::initialize()
     
     turtle.start_position();
     
-    vec3 camera_pos = turtle.drawable.model.translation + vec3{ 0.0f, -0.5f, 0.3f };
-    vec3 camera_target = turtle.drawable.model.translation + vec3{ 0.0f, 1.0f, 0.2f }; // small tilt down
+    // ───────────────────────────────────────────────────────────────────
+    // Compute initial camera position based on gui.first_player_view
+    vec3 base = turtle.drawable.model.translation;
+    vec3 offset;
+    if (gui.first_player_view) {
+        // First‐person offset:
+        offset = vec3{ 0.0f, -0.5f, 0.3f };
+    }
+    else {
+        // Third‐person offset:
+        offset = vec3{ 0.0f, -1.8f, 1.0f };
+    }
+    vec3 camera_pos = base + offset;
+    vec3 camera_target = base + vec3{ 0.0f, 1.0f, 0.2f };
 
     camera_control.look_at(
         camera_pos,
         camera_target,
         { 0.0f, 0.0f, 1.0f }   // 'up' is still Z
     );
+    // ───────────────────────────────────────────────────────────────────
 
     environment.caustic_array_tex = create_texture_array_from_sequence(
         project::path + "assets/caustics/02B_Caribbean_Caustics_Deep_FREE_SAMPLE_",
@@ -211,11 +224,44 @@ void scene_structure::display_frame()
 
         // Handle turtle movement from keyboard arrows
         handle_keyboard_movement();
+        // ───────────────────────────────────────────────────────────────
+        // Re‐anchor / update the camera **every frame** based on current turtle position
+        vec3 base = turtle.drawable.model.translation;
+        vec3 offset;
+        if (gui.first_player_view) {
+            // First‐player offset:
+            offset = vec3{ 0.0f, -0.5f, 0.3f };
+        }
+        else {
+            // Third‐person offset:
+            offset = vec3{ 0.0f, -1.8f, 1.0f };
+        }
+        vec3 camera_pos = base + offset;
+        vec3 camera_target = base + vec3{ 0.0f, 1.0f, 0.2f };
+
+        camera_control.look_at(
+            camera_pos,
+            camera_target,
+            { 0.0f, 0.0f, 1.0f }
+        );
+        // ───────────────────────────────────────────────────────────────
     }
     // 4) If the game HAS started and is OVER ⇒ show “Game Over” screen
     else if (game_started && game_over) {
         // We still draw the turtle (so the user sees it in its final position)
         draw(turtle.drawable, environment);
+	}
+	else {
+		draw(turtle.drawable, environment);
+		ImGui::Begin("Game"); 
+		ImGui::Text("💥 Turtle got eaten!");
+		if (ImGui::Button("Restart")) {
+			game_over = false;
+			timer.update();
+            initialize();      // reset everything
+		}
+		ImGui::End();
+	}
 
         // Full‐screen modal window for “Game Over”
         ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
@@ -278,9 +324,14 @@ void scene_structure::display_frame()
 void scene_structure::display_gui()
 {
     ImGui::Checkbox("Frame", &gui.display_frame);
-    ImGui::Checkbox("Wireframe", &gui.display_wireframe);
-
     ImGui::Separator();
+
+    ImGui::Checkbox("Wireframe", &gui.display_wireframe);
+    ImGui::Separator();
+
+    ImGui::Checkbox("First Player View", &gui.first_player_view);
+    ImGui::Separator();
+
     ImGui::Text("Move Turtle");
 
     const float button_step = 0.2f;  // movement per click

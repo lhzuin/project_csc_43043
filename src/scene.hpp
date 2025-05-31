@@ -11,8 +11,9 @@
 
 // Variables associated to the GUI (buttons, etc)
 struct gui_parameters {
-    bool display_frame = true;
+    bool display_frame = false;
     bool display_wireframe = false;
+    bool first_player_view = false;
 };
 
 // The structure of the custom scene
