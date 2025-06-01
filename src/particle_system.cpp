@@ -1,0 +1,171 @@
+// File: src/particle_system.cpp
+#include "particle_system.hpp"
+#include <random>
+
+using namespace cgp;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 1) initialize(): set up sphere, shader, instance‐seed VBO, blending, static uniforms
+// ─────────────────────────────────────────────────────────────────────────────
+void ParticleSystem::initialize(environment_structure  const& env, std::string const& vert_path,
+                                std::string const& frag_path,
+                                int                max_insts,
+                                float              sphere_radius_in,
+                                int                sector_count,
+                                int                stack_count)
+{
+    environment = env;
+    // (1) remember max_instances
+    max_instances = max_insts;
+
+    // (2) Build a small sphere mesh (centered at world origin).  
+    //     cgp::mesh_primitive_sphere takes (center, radius, sectors, stacks).
+    mesh sphere_mesh = mesh_primitive_sphere(sphere_radius_in, {0,0,0}, sector_count, stack_count);
+    sphere.initialize_data_on_gpu(sphere_mesh);
+    shader.load(vert_path, frag_path);
+    sphere.shader = shader;
+
+
+    numarray<vec3> instance_seeds(max_instances);
+    std::mt19937 eng{std::random_device{}()};
+    std::uniform_real_distribution<float> U(0.0f,1.0f);
+
+    for(int i=0; i<max_instances; ++i) {
+        float s = U(eng);
+        instance_seeds[i] = vec3{s, 0.0f, 0.0f}; 
+    }
+    sphere.initialize_supplementary_data_on_gpu(instance_seeds, 4, 1);
+
+    // (5) Enable blending (once).  We use alpha blending:
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // (6) Query all “static” uniform locations and store them:
+    GLuint pid = sphere.shader.id;
+    glUseProgram(pid);
+
+    loc_model     = glGetUniformLocation(pid, "model");
+    loc_spread    = glGetUniformLocation(pid, "spread_radius");
+    loc_speed     = glGetUniformLocation(pid, "speed");
+    loc_fall      = glGetUniformLocation(pid, "fall_depth");
+    loc_swirl     = glGetUniformLocation(pid, "swirl_strength");
+    loc_color     = glGetUniformLocation(pid, "particle_color");
+    loc_alpha     = glGetUniformLocation(pid, "alpha");
+    loc_fog_color = glGetUniformLocation(pid, "fog_color");
+    loc_fog_dist  = glGetUniformLocation(pid, "fog_distance_max");
+
+    // Per‐frame uniforms:
+    loc_view  = glGetUniformLocation(pid, "view");
+    loc_proj  = glGetUniformLocation(pid, "projection");
+    loc_light = glGetUniformLocation(pid, "light");
+    loc_time = glGetUniformLocation(pid, "time");
+
+    // (7) Upload “static” uniforms once with our default parameters:
+    //     – model = identity
+    cgp::mat4 I = cgp::mat4(1.0f);
+    glUniformMatrix4fv(loc_model,  1, GL_FALSE, &I[0][0]);
+
+    // Speed, spread_radius, fall_depth, swirl_strength:
+    glUniform1f(loc_spread, spread_radius);
+    glUniform1f(loc_speed,  speed);
+    glUniform1f(loc_fall,   fall_depth);
+    glUniform1f(loc_swirl,  swirl_strength);
+
+    // Color + alpha:
+    glUniform3fv(loc_color, 1, &color[0]);
+    glUniform1f(loc_alpha,   alpha);
+
+    // Fog:
+    glUniform3fv(loc_fog_color, 1, &fog_color[0]);
+    glUniform1f(loc_fog_dist,    fog_distance_max);
+
+    glUseProgram(0);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 2) set_parameters(): modify any dynamic parameters and re‐upload static uniforms
+// ─────────────────────────────────────────────────────────────────────────────
+void ParticleSystem::set_parameters(int       inst_count,
+                                    float     speed_in,
+                                    float     spread_in,
+                                    float     fall_in,
+                                    float     swirl_in,
+                                    cgp::vec3 color_in,
+                                    float     alpha_in,
+                                    cgp::vec3 fog_col_in,
+                                    float     fog_dist_in)
+{
+    instance_count   = cgp::clamp(inst_count, 0, max_instances);
+    speed            = speed_in;
+    spread_radius    = spread_in;
+    fall_depth       = fall_in;
+    swirl_strength   = swirl_in;
+    color            = color_in;
+    alpha            = alpha_in;
+    fog_color        = fog_col_in;
+    fog_distance_max = fog_dist_in;
+
+    upload_static_uniforms();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 3) upload_static_uniforms(): send parameters that only change when set_parameters is called
+// ─────────────────────────────────────────────────────────────────────────────
+void ParticleSystem::upload_static_uniforms()
+{
+    GLuint pid = sphere.shader.id;
+    glUseProgram(pid);
+
+    // model stays identity (it never changes)
+    cgp::mat4 I = cgp::mat4(1.0f);
+    glUniformMatrix4fv(loc_model, 1, GL_FALSE, &I[0][0]);
+
+    // re‐send “spread_radius, speed, fall_depth, swirl_strength”
+    glUniform1f(loc_spread, spread_radius);
+    glUniform1f(loc_speed,  speed);
+    glUniform1f(loc_fall,   fall_depth);
+    glUniform1f(loc_swirl,  swirl_strength);
+
+    // re‐send color + alpha
+    glUniform3fv(loc_color, 1, &color[0]);
+    glUniform1f(loc_alpha,   alpha);
+
+    // re‐send fog
+    glUniform3fv(loc_fog_color, 1, &fog_color[0]);
+    glUniform1f(loc_fog_dist,    fog_distance_max);
+
+    glUseProgram(0);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 4) upload_frame_uniforms(view, proj, light): send per‐frame view/proj/light
+// ─────────────────────────────────────────────────────────────────────────────
+void ParticleSystem::upload_frame_uniforms(cgp::mat4 const& view_matrix,
+                                           cgp::mat4 const& proj_matrix,
+                                           cgp::vec3 const& light_pos, float time)
+{
+    GLuint pid = sphere.shader.id;
+    glUseProgram(pid);
+
+    glUniformMatrix4fv(loc_view, 1, GL_FALSE, &view_matrix[0][0]);
+    glUniformMatrix4fv(loc_proj, 1, GL_FALSE, &proj_matrix[0][0]);
+    glUniform3fv(loc_light, 1, &light_pos[0]);
+    glUniform1f(loc_time,  time);
+
+    glUseProgram(0);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 5) draw(): call CGP’s draw() on the instanced sphere, passing instance_count
+// ─────────────────────────────────────────────────────────────────────────────
+void ParticleSystem::draw()
+{
+    // Disable writing to depth buffer so that transparency blends properly:
+    glDepthMask(GL_FALSE);
+
+    // Let CGP draw “instance_count” copies of sphere:
+    cgp::draw(sphere, environment, instance_count);
+
+    // Restore depth‐writes for any subsequent opaque draws:
+    glDepthMask(GL_TRUE);
+}

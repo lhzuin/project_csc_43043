@@ -92,6 +92,19 @@ void scene_structure::initialize()
     );
 
     spawn_shark();
+
+
+    const std::string vert_path = project::path + "shaders/particle/particle.vert.glsl";
+    const std::string frag_path = project::path + "shaders/particle/particle.frag.glsl";
+    int max_particles = 2000000;
+    int num_particles = 200000;
+    float speed_bubbles = 2.0f;
+    
+
+    particle_system.initialize(environment, vert_path, frag_path, max_particles);
+
+    // Optionally, immediately set your desired parameters:
+    particle_system.set_parameters(num_particles,speed_bubbles,6.0f,40.0f,0.4f,cgp::vec3(0.8f, 0.9f, 1.0f),0.15f,cgp::vec3(environment.background_color),environment.fog_d_max);
     
 }
 
@@ -244,7 +257,18 @@ void scene_structure::display_frame()
             camera_target,
             { 0.0f, 0.0f, 1.0f }
         );
-        // ───────────────────────────────────────────────────────────────
+        // ─────────────────────────────────────────────────────────────────────────────
+        //  WATER‐PARTICLES: upload per-frame uniforms (view, proj, light), then draw:
+        // ─────────────────────────────────────────────────────────────────────────────
+        {
+            // view/proj from CGP
+            cgp::mat4 V = environment.camera_view;
+            cgp::mat4 P = camera_projection.matrix();
+            cgp::vec3 L = environment.light;
+
+            particle_system.upload_frame_uniforms(V, P, L, timer.t);
+            particle_system.draw();
+        }
     }
     // 4) If the game HAS started and is OVER ⇒ show “Game Over” screen
     else if (game_started && game_over) {
