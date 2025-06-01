@@ -250,19 +250,6 @@ void scene_structure::display_frame()
     else if (game_started && game_over) {
         // We still draw the turtle (so the user sees it in its final position)
         draw(turtle.drawable, environment);
-	}
-	else {
-		draw(turtle.drawable, environment);
-		ImGui::Begin("Game"); 
-		ImGui::Text("💥 Turtle got eaten!");
-		if (ImGui::Button("Restart")) {
-			game_over = false;
-			timer.update();
-            initialize();      // reset everything
-		}
-		ImGui::End();
-	}
-
         // Full‐screen modal window for “Game Over”
         ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
         ImGui::SetNextWindowSize(ImVec2((float)window.width, (float)window.height));
