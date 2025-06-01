@@ -8,6 +8,7 @@
 #include "actors/skinned_actor.hpp"
 #include "actors/shark_actor.hpp"
 #include "actors/turtle_actor.hpp"
+#include "particle_system.hpp"
 
 // Variables associated to the GUI (buttons, etc)
 struct gui_parameters {
@@ -55,6 +56,8 @@ struct scene_structure : cgp::scene_inputs_generic {
     mesh_drawable          cube1, cube2;
 
     cgp::vec3 camera_offset;
+
+    ParticleSystem   particle_system;
 
     void handle_keyboard_movement();               // poll arrows each frame
 

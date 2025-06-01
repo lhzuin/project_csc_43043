@@ -168,7 +168,8 @@ src//main.o: src//main.cpp ../../cgp/library/cgp/cgp.hpp \
   external/tinygltf/tiny_gltf.h src/loader/gpu_skin_helper.hpp \
   src/actors/skinned_actor.hpp src/actors/../loader/gltf_loader.hpp \
   src/actors/../loader/gpu_skin_helper.hpp src/actors/shark_actor.hpp \
-  src/actors/npc_actor.hpp src/actors/turtle_actor.hpp
+  src/actors/npc_actor.hpp src/actors/turtle_actor.hpp \
+  src/particle_system.hpp
 ../../cgp/library/cgp/cgp.hpp:
 ../../cgp/library/cgp/cgp_parameters.hpp:
 ../../cgp/library/cgp/01_base/base.hpp:
@@ -346,3 +347,4 @@ src/actors/../loader/gpu_skin_helper.hpp:
 src/actors/shark_actor.hpp:
 src/actors/npc_actor.hpp:
 src/actors/turtle_actor.hpp:
+src/particle_system.hpp:

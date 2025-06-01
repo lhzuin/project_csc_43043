@@ -29,6 +29,7 @@ void environment_structure::send_opengl_uniform(opengl_shader_structure const& s
 	opengl_uniform(shader, "light", light, false);
 	opengl_uniform(shader, "fog_d_max", fog_d_max, false);
 	opengl_uniform(shader, "fog_color", fog_color, false);
+	
 
 
 	// bind it to texture unit 1
