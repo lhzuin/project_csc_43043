@@ -2,6 +2,7 @@
 #include "cgp/cgp.hpp"
 #include <random>
 #include "../environment.hpp"
+#include <random>
 /**
  * Convenience: load, setup texture & joint groups all at once.
  */
@@ -24,13 +25,24 @@ void turtle_actor::initialize(cgp::opengl_shader_structure const& shader,
     groups["RR"] = { 6,  7,  8,  9 };   // right-rear
     groups["LF"] = { 10, 11, 12, 13 };   // left-front
     groups["LR"] = { 14, 15, 16, 17 };   // left-rear
+
+
+    {
+        static std::mt19937 eng{ std::random_device{}() };
+        std::uniform_real_distribution<float> U(0.0f, 2.0f * cgp::Pi);
+        osc_phase_x = U(eng);
+        osc_phase_y = U(eng);
+    }
 }
 
 void turtle_actor::start_position() {
-
     drawable.model.rotation = base_rotation;
-    vec3 turtle_pos = { 0.2f, 0.4f, 0.5f };
-    drawable.model.translation = turtle_pos;
+
+    vec3 initial_pos = { 0.2f, 0.4f, 0.5f };
+    base_translation = initial_pos;
+
+    drawable.model.translation = base_translation;
+
     upload_pose_to_gpu();
 }
 
@@ -40,6 +52,17 @@ void turtle_actor::start_position() {
  * Generate wiggling animation on body, tail, fins and jaw.
  */
 void turtle_actor::animate(float t) {
+    // ─── 1) Compute the small involuntary drift around the base position ───────
+    // dx = A_x * sin(2π * f_x * t + phase_x), same for dy
+    float dx = osc_amp_x * std::sin(2.0f * cgp::Pi * osc_freq_x * t + osc_phase_x);
+    float dy = osc_amp_y * std::sin(2.0f * cgp::Pi * osc_freq_y * t + osc_phase_y);
+
+    // We assume Z is “up,” so no vertical oscillation (or set dz=0 if you did not want Z):
+    float dz = 0.0f;
+
+    // Set drawable.model.translation = base_translation + (dx, dy, dz)
+    drawable.model.translation = base_translation + cgp::vec3{dx, dy, dz};
+    
     aFront = front_amplitude * std::sin( front_frequency * t );        // front pair
     aRear  = rear_amplitude * std::sin( rear_frequency * t + cgp::Pi ); // rear 180°
 
@@ -84,7 +107,7 @@ void turtle_actor::animate(float t) {
 void turtle_actor::move(vec3 const& direction)
 {
     // 1) slide the turtle
-    drawable.model.translation += direction;
+    base_translation += direction;
 
     // 2) compute targets based on your original sensitivities
     const float yaw_sensitivity = 20.0f;  // X → bank
@@ -104,7 +127,6 @@ void turtle_actor::move(vec3 const& direction)
 
     // 5) apply & upload
     drawable.model.rotation = R;
-    upload_pose_to_gpu();
 }
 
 
