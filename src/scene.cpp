@@ -64,7 +64,7 @@ void scene_structure::initialize()
     
     // ───────────────────────────────────────────────────────────────────
     // Compute initial camera position based on gui.first_player_view
-    vec3 base = turtle.drawable.model.translation;
+    vec3 base = turtle.base_translation;
     vec3 offset;
     if (gui.first_player_view) {
         // First‐person offset:

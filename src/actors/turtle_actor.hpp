@@ -15,6 +15,17 @@ struct turtle_actor final: public skinned_actor {
     float        rear_frequency      = 2.0f;     ///< fin beat amplitude
     float aFront;
     float aRear;
+
+    cgp::vec3 base_translation = {0,0,0};
+
+    // ─── Oscillation parameters ─────────────────────────────────────────
+    // These control how large/frequent the involuntary drift is in each axis:
+    float osc_amp_x       = 0.1f;      // max ±0.03 units along X
+    float osc_amp_y       = 0.08f;      // max ±0.02 units along Y
+    float osc_freq_x      = 0.31f;       // ~0.7 Hz along X
+    float osc_freq_y      = 0.7f;       // ~1.1 Hz along Y
+    float osc_phase_x     = 0.0f;       // random phase offset in [0,2π]
+    float osc_phase_y     = 0.0f;       // random phase offset in [0,2π]
     
     //rotation_transform base_rotation;
     cgp::rotation_transform base_rotation; // cgp::rotation_transform::from_axis_angle({ 1, 0, 0 }, Pi / 2.0f);
