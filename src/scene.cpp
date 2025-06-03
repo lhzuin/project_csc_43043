@@ -95,6 +95,8 @@ void scene_structure::initialize()
         image_format::jpg
     );
 
+    // Reset the “difficulty timer” so shark‐speed starts fresh
+    gameplay_time = 0.0f;
     spawn_shark();
 
 
@@ -367,16 +369,16 @@ void scene_structure::display_gui()
     const float button_step = 0.2f;  // movement per click
 
     if (ImGui::ArrowButton("##Up", ImGuiDir_Up))
-        turtle.move({ 0, +button_step, 0 });
+        turtle.move({ 0, +button_step, 0 }, timer.t);
     ImGui::SameLine();
     if (ImGui::ArrowButton("##Left", ImGuiDir_Left))
-        turtle.move({ -button_step, 0, 0 });
+        turtle.move({ -button_step, 0, 0 }, timer.t);
     ImGui::SameLine();
     if (ImGui::ArrowButton("##Right", ImGuiDir_Right))
-        turtle.move({ +button_step, 0, 0 });
+        turtle.move({ +button_step, 0, 0 }, timer.t);
     ImGui::SameLine();
     if (ImGui::ArrowButton("##Down", ImGuiDir_Down))
-        turtle.move({ 0, -button_step, 0 });
+        turtle.move({ 0, -button_step, 0 }, timer.t);
 }
 
 
@@ -412,7 +414,7 @@ void scene_structure::handle_keyboard_movement()
 
     if (!equals_exact(delta, origin)) {
         delta = normalize(delta) * speed;
-        turtle.move(delta);
+        turtle.move(delta,timer.t);
     }
 }
 

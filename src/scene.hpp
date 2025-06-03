@@ -40,7 +40,7 @@ struct scene_structure : cgp::scene_inputs_generic {
 	bool   game_over   = false;
     bool   game_started = false;                //to control the main game menu
     // How quickly the shark’s speed goes up over time (units/sec^2)
-    float speed_increase_rate = 0.5f;
+    float speed_increase_rate = 0.09f;
     // track gameplay time so that respawning doesn’t reset difficulty
     float gameplay_time = 0.0f;
     mesh_drawable          global_frame;        // The standard global frame
