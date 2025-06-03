@@ -39,6 +39,10 @@ struct scene_structure : cgp::scene_inputs_generic {
 	// Collision mechanism
 	bool   game_over   = false;
     bool   game_started = false;                //to control the main game menu
+    // How quickly the shark’s speed goes up over time (units/sec^2)
+    float speed_increase_rate = 0.5f;
+    // track gameplay time so that respawning doesn’t reset difficulty
+    float gameplay_time = 0.0f;
     mesh_drawable          global_frame;        // The standard global frame
     environment_structure  environment;         // Standard environment controller
     input_devices          inputs;              // Mouse, keyboard, window size…

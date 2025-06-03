@@ -123,6 +123,10 @@ void scene_structure::spawn_shark()
         sharks.push_back(std::move(s));
     }
     sharks[0].start_position(turtle);
+
+    // Immediately ramp that new shark’s speed up by (speed_increase_rate * gameplay_time)
+    // so that it’s already “as fast as” any shark would be at this point
+    sharks[0].speed += speed_increase_rate * gameplay_time;
 }
 
 //------------------------------------------------------------------------------
@@ -218,6 +222,10 @@ void scene_structure::display_frame()
         float dt = timer.t - t_prev;
         environment.uniform_generic.uniform_float["time"] = timer.t;
 
+
+        // Accumulate total gameplay time
+        gameplay_time += dt;
+
         /* ======== TURTLE AND NEMO ======== */
         turtle.animate(timer.t);
 
@@ -229,6 +237,8 @@ void scene_structure::display_frame()
 
         /* ======== SHARK ======== */
         shark_actor& sh = sharks[0];
+        // Increase shark.speed by a bit each second
+        sh.speed += speed_increase_rate * dt;
         sh.update_position(dt);
         sh.animate(timer.t);
         draw(sh.drawable, environment);
