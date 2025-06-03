@@ -50,6 +50,9 @@ struct scene_structure : cgp::scene_inputs_generic {
     nemo_actor nemo;
 
     timer_basic timer;
+    // 1) Track the high score over the entire game session:
+    float high_score = 0.0f;
+    bool first_run = true;
 
     cgp::vec3 camera_offset;
 

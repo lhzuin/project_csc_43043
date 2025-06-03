@@ -29,87 +29,95 @@ void deform_terrain(mesh& m)
     m.normal_update();
 }
 
-// This function is called only once at the beginning of the program
+// ————— One‐time (guarded) + per‐run initialization —————
 void scene_structure::initialize()
 {
-    std::cout << "Start function scene_structure::initialize()" << std::endl;
+    std::cout << "Start scene_structure::initialize()\n";
 
-    // Set the behavior of the camera and its initial position
-    // ********************************************** //
-    camera_control.initialize(inputs, window);
-    camera_control.set_rotation_axis_z(); // camera rotates around z-axis
-    //   look_at(camera_position, targeted_point, up_direction)
+    // ==== 1) If this is the very first time initialize() is called, reset high_score and load assets:
+    if (first_run) {
+        // 1a) Reset high_score on first run
+        high_score = 0.0f;
+        first_run = false;
 
+        // 1b) Camera + ImGui boilerplate (one‐time)
+        camera_control.initialize(inputs, window);
+        camera_control.set_rotation_axis_z();
+        display_info();
+        global_frame.initialize_data_on_gpu(mesh_primitive_frame());
 
-    // Display general information
-    display_info();
-    // Create the global (x,y,z) frame
-    global_frame.initialize_data_on_gpu(mesh_primitive_frame());
+        // 1c) Load actor shader, turtle, nemo, shark model, etc. (one‐time)
+        actor_shader.load(
+            project::path + "shaders/actor/actor.vert.glsl",
+            project::path + "shaders/mesh/custom_mesh.frag.glsl"
+        );
 
-
-    // Create the shapes seen in the 3D scene
-    // ********************************************** //
-
-    
-    actor_shader.load(
-        project::path + "shaders/actor/actor.vert.glsl",
-        project::path + "shaders/mesh/custom_mesh.frag.glsl");
-
-    turtle.initialize(actor_shader,
+        turtle.initialize(actor_shader,
             project::path + "assets/sea_turtle/sea_turtle.gltf",
-            project::path + "assets/sea_turtle/textures/Tortue_PBRMaterial_baseColor.png");
+            project::path + "assets/sea_turtle/textures/Tortue_PBRMaterial_baseColor.png"
+        );
+        nemo.initialize(actor_shader,
+            project::path + "assets/nemo_finding_nemo/scene.gltf",
+            project::path + "assets/nemo_finding_nemo/textures/nemo_diff_png_baseColor.png"
+        );
 
-    
+        // Create one shark instance but do NOT position it yet:
+        shark_actor s;
+        s.initialize(actor_shader,
+            project::path + "assets/shark/scene.gltf",
+            project::path + "assets/shark/textures/SharkBody.png"
+        );
+        sharks.push_back(std::move(s));
+
+        // Load particle system, caustics, etc. (one‐time)
+        environment.caustic_array_tex = create_texture_array_from_sequence(
+            project::path + "assets/caustics/02B_Caribbean_Caustics_Deep_FREE_SAMPLE_",
+            240, 4, image_format::jpg
+        );
+        particle_system.initialize(environment,
+            project::path + "shaders/particle/particle.vert.glsl",
+            project::path + "shaders/particle/particle.frag.glsl",
+            /*max_particles=*/2000000
+        );
+        particle_system.set_parameters(
+            /*num_particles=*/200000,
+            /*speed_bubbles=*/2.0f,
+            /*life_min=*/6.0f,
+            /*life_max=*/40.0f,
+            /*size_min=*/0.4f,
+            /*color=*/cgp::vec3(0.8f, 0.9f, 1.0f),
+            /*size_variation=*/0.15f,
+            /*background_color=*/cgp::vec3(environment.background_color),
+            /*fog_d_max=*/environment.fog_d_max
+        );
+    }
+
+    // ==== 2) Every time initialize() is called ⇒ reset positions, timer, camera, flags:
+
+    // 2a) Reset timer to zero and immediately update so dt starts fresh
+    timer.t = 0.0f;
+    timer.update();
+
+    // 2b) Reset turtle and Nemo to their start positions
     turtle.start_position();
-
-    //nemo.initialize(actor_shader, project::path + "assets/nemo/scene.gltf", project::path + "assets/nemo/textures/mat_54_baseColor.png");
-    nemo.initialize(actor_shader, project::path + "assets/nemo_finding_nemo/scene.gltf", project::path + "assets/nemo_finding_nemo/textures/nemo_diff_png_baseColor.png");
     nemo.start_position();
-    
-    // ───────────────────────────────────────────────────────────────────
-    // Compute initial camera position based on gui.first_player_view
+
+    // 2c) Reset existing shark to its start position
+    if (!sharks.empty())
+        sharks[0].start_position(turtle);
+
+    // 2d) Recompute camera placement based on turtle’s base translation
     vec3 base = turtle.base_translation;
-    vec3 offset;
-    if (gui.first_player_view) {
-        // First‐person offset:
-        offset = vec3{ 0.0f, -0.5f, 0.3f };
-    }
-    else {
-        // Third‐person offset:
-        offset = vec3{ 0.0f, -1.8f, 1.0f };
-    }
+    vec3 offset = gui.first_player_view
+        ? vec3{ 0.0f, -0.5f, 0.3f }
+    : vec3{ 0.0f, -1.8f, 1.0f };
     vec3 camera_pos = base + offset;
     vec3 camera_target = base + vec3{ 0.0f, 1.0f, 0.2f };
+    camera_control.look_at(camera_pos, camera_target, { 0.0f, 0.0f, 1.0f });
 
-    camera_control.look_at(
-        camera_pos,
-        camera_target,
-        { 0.0f, 0.0f, 1.0f }   // 'up' is still Z
-    );
-    // ───────────────────────────────────────────────────────────────────
-
-    environment.caustic_array_tex = create_texture_array_from_sequence(
-        project::path + "assets/caustics/02B_Caribbean_Caustics_Deep_FREE_SAMPLE_",
-        240,
-        4,
-        image_format::jpg
-    );
-
-    spawn_shark();
-
-
-    const std::string vert_path = project::path + "shaders/particle/particle.vert.glsl";
-    const std::string frag_path = project::path + "shaders/particle/particle.frag.glsl";
-    int max_particles = 2000000;
-    int num_particles = 200000;
-    float speed_bubbles = 2.0f;
-    
-
-    particle_system.initialize(environment, vert_path, frag_path, max_particles);
-
-    // Optionally, immediately set your desired parameters:
-    particle_system.set_parameters(num_particles,speed_bubbles,6.0f,40.0f,0.4f,cgp::vec3(0.8f, 0.9f, 1.0f),0.15f,cgp::vec3(environment.background_color),environment.fog_d_max);
-    
+    // 2e) Reset game‐state flags (but leave high_score alone)
+    game_over = false;
+    game_started = true;
 }
 
 
@@ -183,21 +191,9 @@ void scene_structure::display_frame()
         ImGui::SetCursorPosX(button_x);
         ImGui::SetCursorPosY(button_y);
         if (ImGui::Button(button_label.c_str(), button_size)) {
-            // When “Play” is clicked:
-            game_started = true;
-
-            // Reset game_over in case it was true
-            game_over = false;
-
-            // Re‐initialize anything needed for a new playthrough:
-            // Here, we’ll just call initialize() to reset turtle, sharks, timer, etc.
-            // If you only want to reset positions & scores (and not re‐upload GPU data),
-            // move that logic into a separate helper, e.g. reset_for_new_playthrough().
             initialize();
-
-            // Ensure the timer does not jump. Immediately update it so dt calculations
-            // start fresh from zero:
-            timer.update();
+            // timer.update() is already called inside initialize(),
+            // so you don’t need to call it again here.
         }
 
         ImGui::End();
@@ -211,6 +207,17 @@ void scene_structure::display_frame()
 
     // 3) If the game HAS started but not yet over ⇒ normal gameplay:
     if (game_started && !game_over) {
+
+        /*ImGui::SetNextWindowPos(ImVec2(10.0f, 10.0f));
+        ImGuiWindowFlags flags =
+            ImGuiWindowFlags_NoTitleBar
+            | ImGuiWindowFlags_NoResize
+            | ImGuiWindowFlags_NoMove
+            | ImGuiWindowFlags_NoBackground
+            | ImGuiWindowFlags_NoInputs;
+        ImGui::Begin("ScoreOverlay", nullptr, flags);
+        ImGui::Text("Time alive: %.2f", timer.t);
+        ImGui::End();*/
 
         // Advance your internal clock & animate uniforms
         float t_prev = timer.t;
@@ -242,6 +249,13 @@ void scene_structure::display_frame()
         else {
             // Turtle was caught ⇒ switch to game‐over state
             game_over = true;
+            // 1) Final score = total seconds survived
+            float final_score = timer.t;
+
+            // 2) If this run beats the current high, update:
+            if (final_score > high_score) {
+                high_score = final_score;
+            }
         }
 
         // Handle turtle movement from keyboard arrows
@@ -281,50 +295,52 @@ void scene_structure::display_frame()
     }
     // 4) If the game HAS started and is OVER ⇒ show “Game Over” screen
     else if (game_started && game_over) {
-        // We still draw the turtle (so the user sees it in its final position)
+        // Draw the turtle in its final position:
         draw(turtle.drawable, environment);
-        // Full‐screen modal window for “Game Over”
+
+        // Full‐screen “Game Over” modal:
         ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
         ImGui::SetNextWindowSize(ImVec2((float)window.width, (float)window.height));
 
         ImGuiWindowFlags over_flags =
             ImGuiWindowFlags_NoTitleBar
-          | ImGuiWindowFlags_NoResize
-          | ImGuiWindowFlags_NoMove
-          | ImGuiWindowFlags_NoScrollbar
-          | ImGuiWindowFlags_NoSavedSettings
-          | ImGuiWindowFlags_NoFocusOnAppearing;
+            | ImGuiWindowFlags_NoResize
+            | ImGuiWindowFlags_NoMove
+            | ImGuiWindowFlags_NoScrollbar
+            | ImGuiWindowFlags_NoSavedSettings
+            | ImGuiWindowFlags_NoFocusOnAppearing;
 
         ImGui::Begin("GameOverMenu", nullptr, over_flags);
 
-        // Center the “caught” message & Restart button
+        // 1) Center “Oh no, we have been caught!”
         float window_w = (float)window.width;
         float window_h = (float)window.height;
-
-        std::string over_text    = "Oh no, we have been caught!";
-        std::string restart_text = "Play Again";
-
+        std::string over_text = "Oh no, we have been caught!";
         ImVec2 text_size = ImGui::CalcTextSize(over_text.c_str());
-        float   text_x    = (window_w - text_size.x) * 0.5f;
-        float   text_y    = window_h * 0.45f;
-
+        float text_x = (window_w - text_size.x) * 0.5f;
+        float text_y = window_h * 0.40f;
         ImGui::SetCursorPosX(text_x);
         ImGui::SetCursorPosY(text_y);
         ImGui::Text("%s", over_text.c_str());
 
-        ImVec2 button_size = ImVec2(160.0f, 60.0f);
-        float   button_x    = (window_w - button_size.x) * 0.5f;
-        float   button_y    = text_y + text_size.y + 40.0f;
+        // 2) Display “Your Score” (timer.t) and “High Score” (high_score) below:
+        float line_y = text_y + text_size.y + 20.0f;
+        ImGui::SetCursorPosX((window_w - 200.0f) * 0.5f);
+        ImGui::SetCursorPosY(line_y);
+        ImGui::Text("Your survived %.2f seconds", timer.t);
 
+        ImGui::SetCursorPosX((window_w - 200.0f) * 0.5f);
+        ImGui::SetCursorPosY(line_y + ImGui::GetTextLineHeight() + 10.0f);
+        ImGui::Text("High Score: %.2f seconds", high_score);
+
+        // 3) “Play Again” button under the scores:
+        ImVec2 button_size = ImVec2(160.0f, 60.0f);
+        float button_x = (window_w - button_size.x) * 0.5f;
+        float button_y = line_y + 2 * (ImGui::GetTextLineHeight() + 10.0f) + 30.0f;
         ImGui::SetCursorPosX(button_x);
         ImGui::SetCursorPosY(button_y);
-        if (ImGui::Button(restart_text.c_str(), button_size)) {
-            // Reset everything for a new playthrough:
-            game_over    = false;
-            game_started = true;   // already true, but keep for clarity
-
+        if (ImGui::Button("Play Again", button_size)) {
             initialize();
-            timer.update();
         }
 
         ImGui::End();
