@@ -22,7 +22,7 @@ void nemo_actor::initialize(cgp::opengl_shader_structure const& shader,
     float s = 1.0f / 1600.0f;
     drawable.model.scaling = s;
 
-    base_rotation = rotation_transform::from_axis_angle({1,0,0},  -Pi/2)*rotation_transform::from_axis_angle({0,0,1},  Pi) * rotation_transform::from_axis_angle({1,0,0},  Pi/2);;
+    base_rotation = rotation_transform::from_axis_angle({1,0,0},  -Pi/2)*rotation_transform::from_axis_angle({0,0,1},  Pi) * rotation_transform::from_axis_angle({1,0,0},  Pi/2);
 
 
 }
