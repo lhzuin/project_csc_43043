@@ -13,12 +13,12 @@ void turtle_actor::initialize(cgp::opengl_shader_structure const& shader,
                 std::string const& gltf_file,
                 std::string const& texture_file) {
     // load glTF
-    load_from_gltf(project::path + gltf_file, shader);
+    load_from_gltf(gltf_file, shader);
     drawable.texture.load_and_initialize_texture_2d_on_gpu(
-        project::path + texture_file, GL_REPEAT, GL_REPEAT);
+        texture_file, GL_REPEAT, GL_REPEAT);
 
     base_rotation = rotation_transform::from_axis_angle({ 1, 0, 0 }, Pi / 2.0f);
-    data = mesh_load_file_gltf(project::path + "assets/sea_turtle/sea_turtle.gltf");
+    data = mesh_load_file_gltf( gltf_file);
 
     // define joint groups
     groups["RF"] = { 2,  3,  4,  5 };   // right-front flipper
@@ -75,34 +75,6 @@ void turtle_actor::animate(float t) {
 }
 
 
-//void turtle_actor::move(vec3 const& direction)
-//{
-//    drawable.model.translation += direction;
-//
-//    const float yaw_sensitivity = 4.0f;
-//    const float pitch_sensitivity = 6.0f;
-//
-//    float dx = direction.x;
-//    float dz = direction.z;
-//
-//    // start from your base (or last) orientation:
-//    rotation_transform R = base_rotation; 
-//
-//    if (std::abs(dx) > 1e-5f && std::abs(dz) < 1e-5f) {
-//        float yawAngle = yaw_sensitivity * dx;
-//        // bank around Y **in turtle-local space**:
-//        R = rotation_transform::from_axis_angle({ 0,1,0 }, yawAngle) * R;
-//    }
-//    else if (std::abs(dz) > 1e-5f && std::abs(dx) < 1e-5f) {
-//        float pitchAngle = pitch_sensitivity * dz;
-//        // pitch around X **in turtle-local space**:
-//        R = rotation_transform::from_axis_angle({ 1,0,0 }, pitchAngle) * R;
-//    }
-//    // else R stays as base_rotation
-//
-//    drawable.model.rotation = R;
-//    upload_pose_to_gpu();
-//}
 
 void turtle_actor::move(vec3 const& direction)
 {

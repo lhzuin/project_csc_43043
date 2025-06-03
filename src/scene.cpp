@@ -51,16 +51,20 @@ void scene_structure::initialize()
     // ********************************************** //
 
     
-    turtle_shader.load(
-        project::path + "shaders/turtle/turtle.vert.glsl",
+    actor_shader.load(
+        project::path + "shaders/actor/actor.vert.glsl",
         project::path + "shaders/mesh/custom_mesh.frag.glsl");
 
-    turtle.initialize(turtle_shader,
+    turtle.initialize(actor_shader,
             project::path + "assets/sea_turtle/sea_turtle.gltf",
             project::path + "assets/sea_turtle/textures/Tortue_PBRMaterial_baseColor.png");
 
     
     turtle.start_position();
+
+    //nemo.initialize(actor_shader, project::path + "assets/nemo/scene.gltf", project::path + "assets/nemo/textures/mat_54_baseColor.png");
+    nemo.initialize(actor_shader, project::path + "assets/nemo_finding_nemo/scene.gltf", project::path + "assets/nemo_finding_nemo/textures/nemo_diff_png_baseColor.png");
+    nemo.start_position();
     
     // ───────────────────────────────────────────────────────────────────
     // Compute initial camera position based on gui.first_player_view
@@ -113,7 +117,7 @@ void scene_structure::spawn_shark()
 {
     if (sharks.size() == 0){
         shark_actor s;
-        s.initialize(turtle_shader,
+        s.initialize(actor_shader,
             project::path + "assets/shark/scene.gltf",
             project::path + "assets/shark/textures/SharkBody.png");
         sharks.push_back(std::move(s));
@@ -214,9 +218,14 @@ void scene_structure::display_frame()
         float dt = timer.t - t_prev;
         environment.uniform_generic.uniform_float["time"] = timer.t;
 
-        /* ======== TURTLE ======== */
+        /* ======== TURTLE AND NEMO ======== */
         turtle.animate(timer.t);
+
+        nemo.follow(turtle);
+        nemo.animate(timer.t);
+
         draw(turtle.drawable, environment);
+        draw(nemo.drawable, environment);
 
         /* ======== SHARK ======== */
         shark_actor& sh = sharks[0];

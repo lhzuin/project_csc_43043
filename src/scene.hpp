@@ -9,6 +9,7 @@
 #include "actors/shark_actor.hpp"
 #include "actors/turtle_actor.hpp"
 #include "particle_system.hpp"
+#include "actors/nemo_actor.hpp"
 
 // Variables associated to the GUI (buttons, etc)
 struct gui_parameters {
@@ -44,26 +45,17 @@ struct scene_structure : cgp::scene_inputs_generic {
     gui_parameters         gui;                 // GUI state
 
     turtle_actor          turtle;
-    opengl_shader_structure turtle_shader;
+    opengl_shader_structure actor_shader;
 
-    std::vector<cgp::mat4> shark_inverse_bind;
-    std::vector<int>       shark_joint_node;    // skin → node
-    std::vector<cgp::mat4> shark_uBones;
+    nemo_actor nemo;
 
-    timer_basic            timer;
-
-    mesh_drawable          terrain, water, tree;
-    mesh_drawable          cube1, cube2;
+    timer_basic timer;
 
     cgp::vec3 camera_offset;
 
     ParticleSystem   particle_system;
 
     void handle_keyboard_movement();               // poll arrows each frame
-
-    // ****************************** //
-    // Functions
-    // ****************************** //
 
     void initialize();    // called once before the loop
     void display_frame(); // called every frame to draw
