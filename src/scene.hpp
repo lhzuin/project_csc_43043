@@ -10,6 +10,7 @@
 #include "actors/turtle_actor.hpp"
 #include "particle_system.hpp"
 #include "actors/nemo_actor.hpp"
+#include "actors/fish_actor.hpp"
 
 // Variables associated to the GUI (buttons, etc)
 struct gui_parameters {
@@ -52,6 +53,7 @@ struct scene_structure : cgp::scene_inputs_generic {
     opengl_shader_structure actor_shader;
 
     nemo_actor nemo;
+    fish_actor fish;
 
     timer_basic timer;
 

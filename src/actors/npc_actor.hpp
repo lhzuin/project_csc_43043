@@ -25,9 +25,9 @@ struct npc_actor : public skinned_actor {
      * Checks for collision between the shark and another skinned_actor
      */
 
-     virtual bool check_for_collision(skinned_actor const&  actor) = 0;
+    virtual bool check_for_collision(skinned_actor const&  actor) = 0;
 
-     bool check_for_end_of_life();
+    bool check_for_end_of_life();
 
 private:
     /// Align the mesh forward (-Y) to given direction

@@ -66,6 +66,18 @@ void scene_structure::initialize()
     nemo.initialize(actor_shader, project::path + "assets/nemo_finding_nemo/scene.gltf", project::path + "assets/nemo_finding_nemo/textures/nemo_diff_png_baseColor.png");
     nemo.start_position();
     
+    opengl_shader_structure fish_instanced_shader;
+    fish_instanced_shader.load(
+        project::path + "shaders/actor/instanced_fish.vert.glsl",
+        project::path + "shaders/mesh/custom_mesh.frag.glsl"  // reuse your existing fragment
+    );
+
+    fish.initialize(fish_instanced_shader,
+                    project::path + "assets/blue_powder_tang/scene.gltf",
+                    project::path + "assets/blue_powder_tang/textures/Material.002_baseColor.png");
+    fish.start_position();
+    //fish.initialize(actor_shader, project::path + "assets/blue_powder_tang/scene.gltf", project::path + "assets/blue_powder_tang/textures/Material.002_baseColor.png");
+    //fish.start_position();
     // ───────────────────────────────────────────────────────────────────
     // Compute initial camera position based on gui.first_player_view
     vec3 base = turtle.base_translation;
@@ -236,6 +248,11 @@ void scene_structure::display_frame()
 
         draw(turtle.drawable, environment);
         draw(nemo.drawable, environment);
+
+        /* ======== FISHES ======== */
+        fish.animate(timer.t);
+        fish.draw(environment, camera_projection);
+        //draw(fish.drawable, environment);
 
         /* ======== SHARK ======== */
         shark_actor& sh = sharks[0];
