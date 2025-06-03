@@ -33,7 +33,7 @@ struct turtle_actor final: public skinned_actor {
     // --- new for smoothing ---
     float current_yaw = 0.0f;
     float current_pitch = 0.0f;
-    float smoothing = 0.15f;  // how fast to catch up: 0 < s <= 1
+    float smoothing = 0.05f;  // how fast to catch up: 0 < s <= 1
    
     gltf_geometry_and_texture data;
 
@@ -50,7 +50,7 @@ struct turtle_actor final: public skinned_actor {
     /**
      * Swim movement + directional alignment.
      */
-    void move(cgp::vec3 const& direction);
+    void move(cgp::vec3 const& direction, float dt);
 
     bool check_for_collision(skinned_actor const& actor);
     void animate(float t) override;
