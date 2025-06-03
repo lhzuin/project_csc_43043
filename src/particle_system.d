@@ -1,4 +1,4 @@
-src//particle_system.o: src//particle_system.cpp src/particle_system.hpp \
+src/particle_system.o: src/particle_system.cpp src/particle_system.hpp \
   ../../cgp/library/cgp/cgp.hpp ../../cgp/library/cgp/cgp_parameters.hpp \
   ../../cgp/library/cgp/01_base/base.hpp \
   ../../cgp/library/cgp/01_base/error/error.hpp \

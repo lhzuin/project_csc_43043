@@ -10,6 +10,8 @@ inline void add_skin_attributes(cgp::mesh_drawable& md,
 {
     GLuint vao = md.vao;
     glBindVertexArray(vao);
+    std::cout << "joints.size()  = " << joints.size()  << '\n';
+    std::cout << "weights.size() = " << weights.size() << '\n';
 
     /* --- JOINTS -------------------------------------------------- */
     GLuint vboJ;  glGenBuffers(1, &vboJ);

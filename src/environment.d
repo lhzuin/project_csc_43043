@@ -1,4 +1,4 @@
-src//environment.o: src//environment.cpp src/environment.hpp \
+src/environment.o: src/environment.cpp src/environment.hpp \
   ../../cgp/library/cgp/cgp.hpp ../../cgp/library/cgp/cgp_parameters.hpp \
   ../../cgp/library/cgp/01_base/base.hpp \
   ../../cgp/library/cgp/01_base/error/error.hpp \
