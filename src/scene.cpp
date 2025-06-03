@@ -208,7 +208,7 @@ void scene_structure::display_frame()
     // 3) If the game HAS started but not yet over ⇒ normal gameplay:
     if (game_started && !game_over) {
 
-        /*ImGui::SetNextWindowPos(ImVec2(10.0f, 10.0f));
+        ImGui::SetNextWindowPos(ImVec2(10.0f, 10.0f));
         ImGuiWindowFlags flags =
             ImGuiWindowFlags_NoTitleBar
             | ImGuiWindowFlags_NoResize
@@ -217,7 +217,7 @@ void scene_structure::display_frame()
             | ImGuiWindowFlags_NoInputs;
         ImGui::Begin("ScoreOverlay", nullptr, flags);
         ImGui::Text("Time alive: %.2f", timer.t);
-        ImGui::End();*/
+        ImGui::End();
 
         // Advance your internal clock & animate uniforms
         float t_prev = timer.t;
