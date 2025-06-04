@@ -93,7 +93,7 @@ void turtle_actor::move(vec3 const& direction, float dt)
     //    You can tweak damping_strength to taste (higher → faster response).
     const float damping_strength = 2.5f;
     // Convert to a per‐frame “blend” factor: 
-    float blend = 1.0f - std::exp(-damping_strength * dt/1000);
+    float blend = 1.0f - std::exp(-damping_strength * dt);
     // Now do an exponential‐smoothing step:
     current_yaw = current_yaw + (target_yaw - current_yaw) * blend;
     current_pitch = current_pitch + (target_pitch - current_pitch) * blend;

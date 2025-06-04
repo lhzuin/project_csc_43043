@@ -60,6 +60,7 @@ struct scene_structure : cgp::scene_inputs_generic {
     // 1) Track the high score over the entire game session:
     float high_score = 0.0f;
     float start_time;
+    float dt;
 
     cgp::vec3 camera_offset;
     ParticleParameters particle_parameters;

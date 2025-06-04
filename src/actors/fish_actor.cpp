@@ -35,7 +35,7 @@ void fish_actor::initialize(cgp::opengl_shader_structure const& shader,
     for (int i = 0; i < instance_count; ++i) {
         float u = U01(eng);
         float r = R * std::sqrt(u);
-        float theta = 2.0f * M_PI * U01(eng);
+        float theta = 2.0f * cgp::Pi * U01(eng);
         float x = r * std::cos(theta);
         float y = r * std::sin(theta);
 

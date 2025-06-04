@@ -261,7 +261,7 @@ void scene_structure::display_frame()
         // Advance your internal clock & animate uniforms
         float t_prev = timer.t;
         timer.update();
-        float dt = timer.t - t_prev;
+        dt = timer.t - t_prev;
         environment.uniform_generic.uniform_float["time"] = timer.t;
 
 
@@ -423,16 +423,16 @@ void scene_structure::display_gui()
     const float button_step = 0.2f;  // movement per click
 
     if (ImGui::ArrowButton("##Up", ImGuiDir_Up))
-        turtle.move({ 0, +button_step, 0 }, timer.t);
+        turtle.move({ 0, +button_step, 0 }, dt);
     ImGui::SameLine();
     if (ImGui::ArrowButton("##Left", ImGuiDir_Left))
-        turtle.move({ -button_step, 0, 0 }, timer.t);
+        turtle.move({ -button_step, 0, 0 }, dt);
     ImGui::SameLine();
     if (ImGui::ArrowButton("##Right", ImGuiDir_Right))
-        turtle.move({ +button_step, 0, 0 }, timer.t);
+        turtle.move({ +button_step, 0, 0 }, dt);
     ImGui::SameLine();
     if (ImGui::ArrowButton("##Down", ImGuiDir_Down))
-        turtle.move({ 0, -button_step, 0 }, timer.t);
+        turtle.move({ 0, -button_step, 0 }, dt);
 }
 
 
@@ -468,7 +468,7 @@ void scene_structure::handle_keyboard_movement()
 
     if (!equals_exact(delta, origin)) {
         delta = normalize(delta) * speed;
-        turtle.move(delta,timer.t);
+        turtle.move(delta,dt);
     }
 }
 
