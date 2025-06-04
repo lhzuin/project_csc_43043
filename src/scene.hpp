@@ -65,6 +65,9 @@ struct scene_structure : cgp::scene_inputs_generic {
     ParticleParameters particle_parameters;
     ParticleSystem   particle_system;
 
+    ImVec2  splash_size  = {0,0}; // original size, kept for later
+    GLuint  splash_tex   = 0;
+
     void handle_keyboard_movement();               // poll arrows each frame
     void loop_initialize();  // called once before the loop
     void initialize();    

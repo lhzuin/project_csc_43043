@@ -132,6 +132,29 @@ void scene_structure::initialize()
 
     particle_system.set_parameters(particle_parameters);
 
+    //-----------------------------------------------------------------
+    //  load the initial image
+    //-----------------------------------------------------------------
+    image_structure im =
+        cgp::image_load_file(project::path + "assets/ui/turtle_rider.png");
+
+    splash_size = ImVec2((float)im.width, (float)im.height);
+
+    glGenTextures(1, &splash_tex);
+    glBindTexture(GL_TEXTURE_2D, splash_tex);
+    glTexImage2D(GL_TEXTURE_2D,
+             0,                 // mip-level
+             GL_RGBA8,          // internal format
+             im.width,
+             im.height,
+             0,                 // border
+             GL_RGBA,           // incoming format
+             GL_UNSIGNED_BYTE,  // incoming type
+             &im.data[0]);   // ← pointer, **not** a function call
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+    glBindTexture(GL_TEXTURE_2D,0);
+
     
 }
 
@@ -179,48 +202,38 @@ void scene_structure::display_frame()
 
         ImGui::Begin("StartMenu", nullptr, menu_flags);
 
-        // ─────────────────────────────────────────────────────────────────
-        // 2b) Get window dimensions, measure text size, and center both:
-        // ─────────────────────────────────────────────────────────────────
-        float window_w = (float)window.width;
-        float window_h = (float)window.height;
+        float W = (float)window.width;
+        float H = (float)window.height;
 
-        // The welcome text and button label:
-        std::string menu_text    = "Welcome to Turtle Ride!";
-        std::string button_label = "Play";
+        /*======================================================================
+        1.  Splash picture : scale to fit *inside* window while keeping aspect
+            scale = min( W / imgW , H / imgH )
+        ======================================================================*/
+        if (splash_tex != 0)
+        {
+            float sf = std::min(W / splash_size.x, H / splash_size.y);
+            ImVec2 imgSz = { splash_size.x * sf, splash_size.y * sf };
 
-        // Measure the width/height of the text in pixels
-        ImVec2 text_size = ImGui::CalcTextSize(menu_text.c_str());
+            // center the picture
+            ImVec2 imgPos = { (W - imgSz.x)*0.5f, (H - imgSz.y)*0.5f };
+            ImGui::SetCursorPos(imgPos);
+            ImGui::Image((ImTextureID)(intptr_t)splash_tex, imgSz);
+        }
 
-        // Place the text at ~45% of window height, horizontally centered
-        float text_x = (window_w - text_size.x) * 0.5f;
-        float text_y = window_h * 0.45f;
+        /*======================================================================
+        2.  "Play" button in the *bottom–right* corner (with a margin)
+        ======================================================================*/
+        ImVec2 butSz = {160.0f, 60.0f};
+        float margin = 40.0f;
 
-        ImGui::SetCursorPosX(text_x);
-        ImGui::SetCursorPosY(text_y);
-        ImGui::Text("%s", menu_text.c_str());
+        ImVec2 butPos = { W - butSz.x - margin,  H - butSz.y - margin };
+        ImGui::SetCursorPos(butPos);
 
-        // ─────────────────────────────────────────────────────────────────
-        // 2c) Place a button just below the text, centered
-        // ─────────────────────────────────────────────────────────────────
-        ImVec2 button_size = ImVec2(160.0f, 60.0f);
-        float   button_x    = (window_w - button_size.x) * 0.5f;
-        float   button_y    = text_y + text_size.y + 40.0f;
-
-        ImGui::SetCursorPosX(button_x);
-        ImGui::SetCursorPosY(button_y);
-        if (ImGui::Button(button_label.c_str(), button_size)) {
-            // When “Play” is clicked:
+        if (ImGui::Button("Play", butSz))
+        {
             game_started = true;
-
-            // Reset game_over in case it was true
-            game_over = false;
-
-            // Re‐initialize anything needed for a new playthrough:
-            // Here, we’ll just call initialize() to reset turtle, sharks, timer, etc.
-            // If you only want to reset positions & scores (and not re‐upload GPU data),
-            // move that logic into a separate helper, e.g. reset_for_new_playthrough().
-            initialize();
+            game_over    = false;
+            loop_initialize();
         }
 
         ImGui::End();
