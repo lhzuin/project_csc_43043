@@ -233,7 +233,7 @@ void scene_structure::display_frame()
         {
             game_started = true;
             game_over    = false;
-            loop_initialize();
+            initialize();
         }
 
         ImGui::End();
