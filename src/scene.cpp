@@ -32,12 +32,14 @@ void deform_terrain(mesh& m)
 void scene_structure::loop_initialize()
 {
 
-
+    // Reset timer to zero and immediately update so dt starts fresh
+    timer.update();
+    start_time = timer.t;
+    
 
     // Create the shapes seen in the 3D scene
     // ********************************************** //
 
-    
     turtle.start_position();
 
     nemo.start_position();
@@ -46,15 +48,9 @@ void scene_structure::loop_initialize()
     // ───────────────────────────────────────────────────────────────────
     // Compute initial camera position based on gui.first_player_view
     vec3 base = turtle.base_translation;
-    vec3 offset;
-    if (gui.first_player_view) {
-        // First‐person offset:
-        offset = vec3{ 0.0f, -0.5f, 0.3f };
-    }
-    else {
-        // Third‐person offset:
-        offset = vec3{ 0.0f, -1.8f, 1.0f };
-    }
+    vec3 offset = gui.first_player_view
+            ? vec3{ 0.0f, -0.5f, 0.3f }
+        : vec3{ 0.0f, -1.8f, 1.0f };
     vec3 camera_pos = base + offset;
     vec3 camera_target = base + vec3{ 0.0f, 1.0f, 0.2f };
 
@@ -225,10 +221,6 @@ void scene_structure::display_frame()
             // If you only want to reset positions & scores (and not re‐upload GPU data),
             // move that logic into a separate helper, e.g. reset_for_new_playthrough().
             initialize();
-
-            // Ensure the timer does not jump. Immediately update it so dt calculations
-            // start fresh from zero:
-            timer.update();
         }
 
         ImGui::End();
@@ -242,6 +234,16 @@ void scene_structure::display_frame()
 
     // 3) If the game HAS started but not yet over ⇒ normal gameplay:
     if (game_started && !game_over) {
+        ImGui::SetNextWindowPos(ImVec2(10.0f, 10.0f));
+        ImGuiWindowFlags flags =
+            ImGuiWindowFlags_NoTitleBar
+            | ImGuiWindowFlags_NoResize
+            | ImGuiWindowFlags_NoMove
+            | ImGuiWindowFlags_NoBackground
+            | ImGuiWindowFlags_NoInputs;
+        ImGui::Begin("ScoreOverlay", nullptr, flags);
+        ImGui::Text("Time alive: %.1f", timer.t-start_time);
+        ImGui::End();
 
         // Advance your internal clock & animate uniforms
         float t_prev = timer.t;
@@ -284,6 +286,14 @@ void scene_structure::display_frame()
         else {
             // Turtle was caught ⇒ switch to game‐over state
             game_over = true;
+
+            // 1) Final score = total seconds survived
+            float final_score = timer.t - start_time;
+
+            // 2) If this run beats the current high, update:
+            if (final_score > high_score) {
+                high_score = final_score;
+            }
         }
 
         // Handle turtle movement from keyboard arrows
@@ -291,15 +301,9 @@ void scene_structure::display_frame()
         // ───────────────────────────────────────────────────────────────
         // Re‐anchor / update the camera **every frame** based on current turtle position
         vec3 base = turtle.drawable.model.translation;
-        vec3 offset;
-        if (gui.first_player_view) {
-            // First‐player offset:
-            offset = vec3{ 0.0f, -0.5f, 0.3f };
-        }
-        else {
-            // Third‐person offset:
-            offset = vec3{ 0.0f, -1.8f, 1.0f };
-        }
+        vec3 offset = gui.first_player_view
+                ? vec3{ 0.0f, -0.5f, 0.3f }
+            : vec3{ 0.0f, -1.8f, 1.0f };
         vec3 camera_pos = base + offset;
         vec3 camera_target = base + vec3{ 0.0f, 1.0f, 0.2f };
 
@@ -323,7 +327,7 @@ void scene_structure::display_frame()
     }
     // 4) If the game HAS started and is OVER ⇒ show “Game Over” screen
     else if (game_started && game_over) {
-        // We still draw the turtle (so the user sees it in its final position)
+        // Draw the turtle in its final position:
         draw(turtle.drawable, environment);
         // Full‐screen modal window for “Game Over”
         ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
@@ -331,11 +335,11 @@ void scene_structure::display_frame()
 
         ImGuiWindowFlags over_flags =
             ImGuiWindowFlags_NoTitleBar
-          | ImGuiWindowFlags_NoResize
-          | ImGuiWindowFlags_NoMove
-          | ImGuiWindowFlags_NoScrollbar
-          | ImGuiWindowFlags_NoSavedSettings
-          | ImGuiWindowFlags_NoFocusOnAppearing;
+            | ImGuiWindowFlags_NoResize
+            | ImGuiWindowFlags_NoMove
+            | ImGuiWindowFlags_NoScrollbar
+            | ImGuiWindowFlags_NoSavedSettings
+            | ImGuiWindowFlags_NoFocusOnAppearing;
 
         ImGui::Begin("GameOverMenu", nullptr, over_flags);
 
@@ -343,30 +347,38 @@ void scene_structure::display_frame()
         float window_w = (float)window.width;
         float window_h = (float)window.height;
 
-        std::string over_text    = "Oh no, we have been caught!";
-        std::string restart_text = "Play Again";
+        std::string over_text = "Oh no, we have been caught!";
 
         ImVec2 text_size = ImGui::CalcTextSize(over_text.c_str());
-        float   text_x    = (window_w - text_size.x) * 0.5f;
-        float   text_y    = window_h * 0.45f;
+        float text_x = (window_w - text_size.x) * 0.5f;
+        float text_y = window_h * 0.40f;
 
         ImGui::SetCursorPosX(text_x);
         ImGui::SetCursorPosY(text_y);
         ImGui::Text("%s", over_text.c_str());
 
+        // 2) Display “Your Score” (timer.t) and “High Score” (high_score) below:
+        float line_y = text_y + text_size.y + 20.0f;
+        ImGui::SetCursorPosX((window_w - 200.0f) * 0.5f);
+        ImGui::SetCursorPosY(line_y);
+        ImGui::Text("You survived %.2f seconds", timer.t-start_time);
+
+        ImGui::SetCursorPosX((window_w - 200.0f) * 0.5f);
+        ImGui::SetCursorPosY(line_y + ImGui::GetTextLineHeight() + 10.0f);
+        ImGui::Text("Highest Score: %.2f seconds", high_score);
+
+        // 3) “Play Again” button under the scores:
         ImVec2 button_size = ImVec2(160.0f, 60.0f);
-        float   button_x    = (window_w - button_size.x) * 0.5f;
-        float   button_y    = text_y + text_size.y + 40.0f;
+        float button_x = (window_w - button_size.x) * 0.5f;
+        float button_y = line_y + 2 * (ImGui::GetTextLineHeight() + 10.0f) + 30.0f;
 
         ImGui::SetCursorPosX(button_x);
         ImGui::SetCursorPosY(button_y);
-        if (ImGui::Button(restart_text.c_str(), button_size)) {
+        if (ImGui::Button("Play Again", button_size)) {
             // Reset everything for a new playthrough:
             game_over    = false;
             game_started = true;   // already true, but keep for clarity
-
             loop_initialize();
-            timer.update();
         }
 
         ImGui::End();
