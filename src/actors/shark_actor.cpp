@@ -88,8 +88,8 @@ bool shark_actor::check_for_collision(skinned_actor  const& actor){
 
     // 4) Cylinder dimensions (shark) in its local space:
     //    shrinkXY lets you “cut off” fins, shrinkZ shortens the height if desired
-    constexpr float shrinkXY = 0.7f;
-    constexpr float shrinkZ  = 0.8f;
+    constexpr float shrinkXY = 0.5f;
+    constexpr float shrinkZ  = 0.6f;
     cgp::vec3   E1     = res->half_extents;               // (Ex, Ey, Ez)
     float  radius = std::max(E1.x, E1.y) * shrinkXY; // cylinder radius
     float  halfH  = E1.z * shrinkZ;                  // cylinder half‐height
