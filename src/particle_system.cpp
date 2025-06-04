@@ -85,25 +85,17 @@ void ParticleSystem::initialize(environment_structure  const& env, std::string c
 // ─────────────────────────────────────────────────────────────────────────────
 // 2) set_parameters(): modify any dynamic parameters and re‐upload static uniforms
 // ─────────────────────────────────────────────────────────────────────────────
-void ParticleSystem::set_parameters(int       inst_count,
-                                    float     speed_in,
-                                    float     spread_in,
-                                    float     fall_in,
-                                    float     swirl_in,
-                                    cgp::vec3 color_in,
-                                    float     alpha_in,
-                                    cgp::vec3 fog_col_in,
-                                    float     fog_dist_in)
+void ParticleSystem::set_parameters(ParticleParameters params)
 {
-    instance_count   = cgp::clamp(inst_count, 0, max_instances);
-    speed            = speed_in;
-    spread_radius    = spread_in;
-    fall_depth       = fall_in;
-    swirl_strength   = swirl_in;
-    color            = color_in;
-    alpha            = alpha_in;
-    fog_color        = fog_col_in;
-    fog_distance_max = fog_dist_in;
+    instance_count   = cgp::clamp(params.inst_count, 0, max_instances);
+    speed            = params.speed_in;
+    spread_radius    = params.spread_in;
+    fall_depth       = params.fall_in;
+    swirl_strength   = params.swirl_in;
+    color            = params.color_in;
+    alpha            = params.alpha_in;
+    fog_color        = params.fog_col_in;
+    fog_distance_max = params.fog_dist_in;
 
     upload_static_uniforms();
 }

@@ -51,6 +51,7 @@ struct scene_structure : cgp::scene_inputs_generic {
 
     turtle_actor          turtle;
     opengl_shader_structure actor_shader;
+    opengl_shader_structure fish_instanced_shader;
 
     nemo_actor nemo;
     fish_actor fish;
@@ -58,12 +59,12 @@ struct scene_structure : cgp::scene_inputs_generic {
     timer_basic timer;
 
     cgp::vec3 camera_offset;
-
+    ParticleParameters particle_parameters;
     ParticleSystem   particle_system;
 
     void handle_keyboard_movement();               // poll arrows each frame
-
-    void initialize();    // called once before the loop
+    void loop_initialize();  // called once before the loop
+    void initialize();    
     void display_frame(); // called every frame to draw
     void display_gui();   // ImGui widgets
 

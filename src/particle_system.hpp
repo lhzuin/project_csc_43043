@@ -8,6 +8,21 @@ using cgp::mesh;
 using cgp::mesh_drawable;
 using cgp::numarray;
 
+
+
+
+struct ParticleParameters{
+    int       inst_count = 200000;
+    float     speed_in = 1.5f;
+    float     spread_in = 6.0f;
+    float     fall_in = 40.0f;
+    float     swirl_in = 0.4f;
+    cgp::vec3 color_in = cgp::vec3(0.8f, 0.9f, 1.0f);
+    float     alpha_in = 0.15f;
+    cgp::vec3 fog_col_in;
+    float     fog_dist_in;
+};
+
 /** 
  * ParticleSystem 
  * ----------------
@@ -92,15 +107,7 @@ struct ParticleSystem {
      * Change any of the dynamic parameters at runtime.
      * You must call upload_static_uniforms() afterward to re‐send them to GPU.
      */
-    void set_parameters(int       inst_count,
-                        float     speed_in,
-                        float     spread_in,
-                        float     fall_in,
-                        float     swirl_in,
-                        cgp::vec3 color_in,
-                        float     alpha_in,
-                        cgp::vec3 fog_col_in,
-                        float     fog_dist_in);
+    void set_parameters(ParticleParameters params);
 
     /**
      * Re‐upload all “static” uniforms (those that change only when parameters are changed):
