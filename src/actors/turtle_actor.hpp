@@ -11,7 +11,7 @@ struct turtle_actor final: public skinned_actor {
     // ----- internal animation parameters -----
     float        front_frequency    = 2.0f;      ///< wave freq (Hz)
     float        front_amplitude    = 0.1f;     ///< wave amplitude
-    float        rear_amplitude     = 0.1f;     ///< jaw open amplitude
+    float        rear_amplitude     = 0.1f;    
     float        rear_frequency      = 2.0f;     ///< fin beat amplitude
     float aFront;
     float aRear;

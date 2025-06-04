@@ -257,17 +257,16 @@ void scene_structure::display_frame()
 
         /* ======== TURTLE AND NEMO ======== */
         turtle.animate(timer.t);
+        draw(turtle.drawable, environment);
 
         nemo.follow(turtle);
         nemo.animate(timer.t);
 
-        draw(turtle.drawable, environment);
         draw(nemo.drawable, environment);
 
         /* ======== FISHES ======== */
         fish.animate(timer.t);
         fish.draw(environment, camera_projection);
-        //draw(fish.drawable, environment);
 
         /* ======== SHARK ======== */
         shark_actor& sh = sharks[0];
