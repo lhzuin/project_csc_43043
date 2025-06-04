@@ -75,33 +75,6 @@ void turtle_actor::animate(float t) {
 }
 
 
-
-//void turtle_actor::move(vec3 const& direction)
-//{
-//    // 1) slide the turtle
-//    base_translation += direction;
-//
-//    // 2) compute targets based on your original sensitivities
-//    const float yaw_sensitivity = 10.0f;  // X → bank
-//    const float pitch_sensitivity = 10.0f;  // Z → pitch
-//    float target_yaw = yaw_sensitivity * direction.x;
-//    float target_pitch = pitch_sensitivity * direction.z;
-//
-//    // 3) ease the current angles toward the targets
-//    current_yaw += (target_yaw - current_yaw) * smoothing;
-//    current_pitch += (target_pitch - current_pitch) * smoothing;
-//
-//    // 4) rebuild your rotation in the same order you had before:
-//    //    yaw around Y then pitch around X, both pre‐multiplied on your base
-//    rotation_transform R = base_rotation;
-//    R = rotation_transform::from_axis_angle({ 0,1,0 }, current_yaw) * R;
-//    R = rotation_transform::from_axis_angle({ 1,0,0 }, current_pitch) * R;
-//
-//    // 5) apply & upload
-//    drawable.model.rotation = R;
-//
-//}
-
 void turtle_actor::move(vec3 const& direction, float dt)
 {
     // 1) slide the turtle in world‐space exactly as before

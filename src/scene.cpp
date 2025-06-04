@@ -29,6 +29,48 @@ void deform_terrain(mesh& m)
     m.normal_update();
 }
 
+void scene_structure::loop_initialize()
+{
+
+
+
+    // Create the shapes seen in the 3D scene
+    // ********************************************** //
+
+    
+    turtle.start_position();
+
+    nemo.start_position();
+    
+    fish.start_position();
+    // ───────────────────────────────────────────────────────────────────
+    // Compute initial camera position based on gui.first_player_view
+    vec3 base = turtle.base_translation;
+    vec3 offset;
+    if (gui.first_player_view) {
+        // First‐person offset:
+        offset = vec3{ 0.0f, -0.5f, 0.3f };
+    }
+    else {
+        // Third‐person offset:
+        offset = vec3{ 0.0f, -1.8f, 1.0f };
+    }
+    vec3 camera_pos = base + offset;
+    vec3 camera_target = base + vec3{ 0.0f, 1.0f, 0.2f };
+
+    camera_control.look_at(
+        camera_pos,
+        camera_target,
+        { 0.0f, 0.0f, 1.0f }   // 'up' is still Z
+    );
+    // ───────────────────────────────────────────────────────────────────
+    // Reset the “difficulty timer” so shark‐speed starts fresh
+    gameplay_time = 0.0f;
+    spawn_shark();
+
+    
+}
+
 // This function is called only once at the beginning of the program
 void scene_structure::initialize()
 {
@@ -60,13 +102,9 @@ void scene_structure::initialize()
             project::path + "assets/sea_turtle/textures/Tortue_PBRMaterial_baseColor.png");
 
     
-    turtle.start_position();
 
-    //nemo.initialize(actor_shader, project::path + "assets/nemo/scene.gltf", project::path + "assets/nemo/textures/mat_54_baseColor.png");
     nemo.initialize(actor_shader, project::path + "assets/nemo_finding_nemo/scene.gltf", project::path + "assets/nemo_finding_nemo/textures/nemo_diff_png_baseColor.png");
-    nemo.start_position();
     
-    opengl_shader_structure fish_instanced_shader;
     fish_instanced_shader.load(
         project::path + "shaders/actor/instanced_fish.vert.glsl",
         project::path + "shaders/mesh/custom_mesh.frag.glsl"  // reuse your existing fragment
@@ -75,31 +113,8 @@ void scene_structure::initialize()
     fish.initialize(fish_instanced_shader,
                     project::path + "assets/blue_powder_tang/scene.gltf",
                     project::path + "assets/blue_powder_tang/textures/Material.002_baseColor.png");
-    fish.start_position();
-    //fish.initialize(actor_shader, project::path + "assets/blue_powder_tang/scene.gltf", project::path + "assets/blue_powder_tang/textures/Material.002_baseColor.png");
-    //fish.start_position();
-    // ───────────────────────────────────────────────────────────────────
-    // Compute initial camera position based on gui.first_player_view
-    vec3 base = turtle.base_translation;
-    vec3 offset;
-    if (gui.first_player_view) {
-        // First‐person offset:
-        offset = vec3{ 0.0f, -0.5f, 0.3f };
-    }
-    else {
-        // Third‐person offset:
-        offset = vec3{ 0.0f, -1.8f, 1.0f };
-    }
-    vec3 camera_pos = base + offset;
-    vec3 camera_target = base + vec3{ 0.0f, 1.0f, 0.2f };
 
-    camera_control.look_at(
-        camera_pos,
-        camera_target,
-        { 0.0f, 0.0f, 1.0f }   // 'up' is still Z
-    );
     // ───────────────────────────────────────────────────────────────────
-
     environment.caustic_array_tex = create_texture_array_from_sequence(
         project::path + "assets/caustics/02B_Caribbean_Caustics_Deep_FREE_SAMPLE_",
         240,
@@ -107,22 +122,20 @@ void scene_structure::initialize()
         image_format::jpg
     );
 
-    // Reset the “difficulty timer” so shark‐speed starts fresh
-    gameplay_time = 0.0f;
-    spawn_shark();
-
-
     const std::string vert_path = project::path + "shaders/particle/particle.vert.glsl";
     const std::string frag_path = project::path + "shaders/particle/particle.frag.glsl";
     int max_particles = 2000000;
-    int num_particles = 200000;
-    float speed_bubbles = 2.0f;
-    
+
+    loop_initialize();
 
     particle_system.initialize(environment, vert_path, frag_path, max_particles);
 
-    // Optionally, immediately set your desired parameters:
-    particle_system.set_parameters(num_particles,speed_bubbles,6.0f,40.0f,0.4f,cgp::vec3(0.8f, 0.9f, 1.0f),0.15f,cgp::vec3(environment.background_color),environment.fog_d_max);
+    // Optionally, immediately set your desired parameters
+    particle_parameters.fog_col_in = cgp::vec3(environment.background_color);
+    particle_parameters.fog_dist_in = environment.fog_d_max;
+
+    particle_system.set_parameters(particle_parameters);
+
     
 }
 
@@ -352,7 +365,7 @@ void scene_structure::display_frame()
             game_over    = false;
             game_started = true;   // already true, but keep for clarity
 
-            initialize();
+            loop_initialize();
             timer.update();
         }
 
