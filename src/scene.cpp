@@ -45,6 +45,14 @@ void scene_structure::loop_initialize()
     nemo.start_position();
     
     fish.start_position();
+
+    // ── NEW: initialize bubble center & clear timers/warnings ──
+    bubble_center = turtle.base_translation;  // center the sphere at turtle’s start
+    warning_issued = false;
+    outside_timer = 0.0f;
+    died_by_drowning = false;   //NEW: clear drowning‐flag each time we start
+    // bubble_radius and outside_time_limit remain whatever they are in the header
+    
     // ───────────────────────────────────────────────────────────────────
     // Compute initial camera position based on gui.first_player_view
     vec3 base = turtle.base_translation;
@@ -310,7 +318,30 @@ void scene_structure::display_frame()
 
         // Handle turtle movement from keyboard arrows
         handle_keyboard_movement();
-        // ───────────────────────────────────────────────────────────────
+        // ─────────────────────────────────────────
+        
+        // Accumulate “outside” time; possibly warn or kill
+        check_turtle_in_current(dt);
+
+        if (warning_issued && !game_over) {
+            ImGui::SetNextWindowPos(ImVec2(window.width * 0.5f - 160.0f, 20.0f));
+            ImGuiWindowFlags warn_flags =
+                ImGuiWindowFlags_NoTitleBar
+                | ImGuiWindowFlags_NoResize
+                | ImGuiWindowFlags_NoMove
+                | ImGuiWindowFlags_NoBackground
+                | ImGuiWindowFlags_NoInputs;
+            ImGui::Begin("WarningWindow", nullptr, warn_flags);
+
+            float remaining = std::max(0.0f, outside_time_limit - outside_timer);
+            ImGui::TextColored(
+                ImVec4(1, 0, 0, 1),
+                "Warning: Return within %.1f s!", remaining
+            );
+            ImGui::End();
+        }
+        // ─────────────────────────────────────────
+        
         // Re‐anchor / update the camera **every frame** based on current turtle position
         vec3 base = turtle.drawable.model.translation;
         vec3 offset = gui.first_player_view
@@ -359,7 +390,14 @@ void scene_structure::display_frame()
         float window_w = (float)window.width;
         float window_h = (float)window.height;
 
-        std::string over_text = "Oh no, we have been caught!";
+        // 1) Final message
+        std::string over_text;
+        if (died_by_drowning) {
+            over_text = "Oh no, you strayed too far and lost your way!";
+        }
+        else {
+            over_text = "Oh no, we have been caught!";
+        }
 
         ImVec2 text_size = ImGui::CalcTextSize(over_text.c_str());
         float text_x = (window_w - text_size.x) * 0.5f;
@@ -404,6 +442,43 @@ void scene_structure::display_frame()
     if (gui.display_wireframe) {
         draw_wireframe(shark.drawable, environment);
         draw_wireframe(turtle.drawable, environment);
+    }
+}
+
+void scene_structure::check_turtle_in_current(float dt)
+{
+    // 1) Get the turtle’s current position in world‐space:
+    cgp::vec3 turtle_pos = turtle.drawable.model.translation;
+
+    // 2) Distance to bubble_center:
+    float dist = cgp::norm(turtle_pos - bubble_center);
+
+    // 3) If she’s outside the sphere:
+    if (dist > bubble_radius) {
+        // 3a) If this is the first frame outside, raise a one‐time warning:
+        if (outside_timer == 0.0f) {
+            warning_issued = true;
+        }
+
+        // 3b) Accumulate how long she’s been outside:
+        outside_timer += dt;
+
+        // 3c) If she’s exceeded the allowed outside time, kill the turtle:
+        if (outside_timer >= outside_time_limit) {
+            game_over = true;
+            // ── NEW: record final survival time and update high_score ──
+            float final_score = timer.t - start_time;
+            if (final_score > high_score) {
+                high_score = final_score;
+            }
+            died_by_drowning = true;
+            // ──────────────────────────────────────────────────────────
+        }
+    }
+    // 4) If she’s back inside, clear everything so we can warn again next time:
+    else {
+        outside_timer = 0.0f;
+        warning_issued = false;
     }
 }
 
