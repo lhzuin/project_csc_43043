@@ -28,11 +28,6 @@ out struct fragment_data
 void main()
 {
     /* --------- linear-blend skinning --------------------------------- 
-    mat4 skin =
-          vertex_weight.x * uBones[int(vertex_joint.x)] +
-          vertex_weight.y * uBones[int(vertex_joint.y)] +
-          vertex_weight.z * uBones[int(vertex_joint.z)] +
-          vertex_weight.w * uBones[int(vertex_joint.w)];*/
 
     /* 1) re-normalise the four weights (protects against rounding issues) */
     vec4 w = vertex_weight;
