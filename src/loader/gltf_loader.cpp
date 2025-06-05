@@ -135,7 +135,7 @@ gltf_geometry_and_texture mesh_load_file_gltf(const std::string& filename)
         dst[i] = {u16[4*i+0],u16[4*i+1],u16[4*i+2],u16[4*i+3]};
         }
     };
-
+/*
     auto copy_vec4f = [&](const std::string& attr,cgp::numarray<cgp::vec4>& dst){ 
         auto it = prim.attributes.find(attr);
         if(it==prim.attributes.end()) return;
@@ -148,6 +148,45 @@ gltf_geometry_and_texture mesh_load_file_gltf(const std::string& filename)
         for(size_t i=0;i<acc.count;++i)
         dst[i] = {f[4*i],f[4*i+1],f[4*i+2],f[4*i+3]};
     };
+
+
+*/
+
+    auto copy_vec4f = [&](const std::string& attr,
+                      cgp::numarray<cgp::vec4>& dst)
+{
+    auto it = prim.attributes.find(attr);
+    if(it == prim.attributes.end()) return;
+
+    const auto& acc  = model.accessors[it->second];
+    const auto& view = model.bufferViews[acc.bufferView];
+    const auto& buf  = model.buffers[view.buffer];
+    const uint8_t* src = buf.data.data() + view.byteOffset + acc.byteOffset;
+
+    dst.resize(acc.count);
+
+    if(acc.componentType == TINYGLTF_COMPONENT_TYPE_FLOAT)             // 5126
+    {
+        const float* f = reinterpret_cast<const float*>(src);
+        for(size_t i=0;i<acc.count;++i)
+            dst[i] = {f[4*i+0],f[4*i+1],f[4*i+2],f[4*i+3]};
+    }
+    else if(acc.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE) // 5121
+    {
+        for(size_t i=0;i<acc.count;++i)
+        {
+            const uint8_t* u = src + 4*i;
+            dst[i] = {u[0]/255.f, u[1]/255.f, u[2]/255.f, u[3]/255.f};
+        }
+    }
+    else /* assume UNSIGNED_SHORT (5123) */                             // 5123
+    {
+        const uint16_t* u = reinterpret_cast<const uint16_t*>(src);
+        for(size_t i=0;i<acc.count;++i)
+            dst[i] = {u[4*i]/65535.f, u[4*i+1]/65535.f,
+                      u[4*i+2]/65535.f,u[4*i+3]/65535.f};
+    }
+};
 
     /* -------------------------------------------------------------------------- */
     /*  Use them for each attribute                                               */
