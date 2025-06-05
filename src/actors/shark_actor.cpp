@@ -22,24 +22,66 @@ void shark_actor::initialize(cgp::opengl_shader_structure const& shader,
         {"FinR",   {25,26,27}},
         {"Jaw",    {29,30}}
     };
+
+    //just to restart the initial spawn distance between a game over session and a new game session. 
+    spawn_distance = 20.0f;
 }
 
+/**
+ * (A) This is the override of the pure‐virtual from npc_actor.
+ *     We simply forward to the two‐argument version with elapsed_time = 0.
+ *     By providing this, we satisfy the base class’s requirement.
+ */
 void shark_actor::start_position(skinned_actor const& target_actor) {
+    // Forward to the “real” implementation, with elapsed_time = 0.
+    start_position(target_actor, 0.0f);
+}
 
-    //random position for its origin and for its speed
+/**
+ * (B) This is our new two‐argument start_position that actually does
+ *     the “spawn closer over time” logic.
+ *
+ *     elapsed_time is currently unused in a simple per‐respawn‐decay approach,
+ *     but we keep it in case you want a time‐based decay instead of “per call.”
+ */
+void shark_actor::start_position(skinned_actor const& target_actor, float elapsed_time) {
+    // 1) Random engines & distributions
     static std::mt19937 engine{ std::random_device{}() };
-    std::uniform_real_distribution<float> dist_real(-5.0f, 5.0f);
-    std::uniform_real_distribution<float> dist_real2(-1.0f, 1.0f);
+    std::uniform_real_distribution<float> dist_xz(-5.0f, 5.0f);
+    std::uniform_real_distribution<float> dist_target(-5.0f, 5.0f);
     std::uniform_real_distribution<float> speed_real(2.0f, 8.0f);
-    float rnd_f = dist_real(engine);
-    float rnd_f_target = dist_real(engine);
-    float speed_f = speed_real(engine);
 
-    origin = target_actor.drawable.model.translation + cgp::vec3{ rnd_f, 20.0f, 0.5f };
-    target = target_actor.drawable.model.translation + cgp::vec3{ rnd_f_target, 0.0f, 0.5f };  // desired swim-to point
-    target = 2*target - origin;
-    speed  = speed_f;                // units/sec
+    // 2) Compute how far above the turtle we spawn this time:
+    float current_spawn_dist = std::max(min_spawn_distance, spawn_distance);
+
+    // 3) Random X/Z jitter for origin & target‐bias
+    float rnd_x_shark = dist_xz(engine);
+    float rnd_z_shark = dist_xz(engine);
+    float rnd_x_target = dist_target(engine);
+    float rnd_z_target = dist_target(engine);
+
+    // 4) Turtle’s current position in world space:
+    cgp::vec3 turtle_pos = target_actor.drawable.model.translation;
+
+    // 5) Set the shark’s origin “above” the turtle by current_spawn_dist
+    origin = turtle_pos + cgp::vec3{ rnd_x_shark, current_spawn_dist, rnd_z_shark };
+
+    // 6) Build the swim‐to point (“in front of” turtle + some jitter)
+    target = turtle_pos + cgp::vec3{ rnd_x_target, 0.0f, rnd_z_target };
+    //    Then reflect so that the shark actually moves downward toward that point:
+    target = 2.0f * target - origin;
+
+    // 7) Pick a random speed for this wave
+    speed = speed_real(engine);
+
+    // 8) Update the shark’s model matrix translation to the chosen origin
     drawable.model.translation = origin;
+
+    // 9) Decay spawn_distance so next call is closer:
+    spawn_distance -= spawn_decay_rate;
+    if (spawn_distance < min_spawn_distance) {
+        spawn_distance = min_spawn_distance;
+    }
 }
 
 /**
