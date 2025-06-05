@@ -135,22 +135,6 @@ gltf_geometry_and_texture mesh_load_file_gltf(const std::string& filename)
         dst[i] = {u16[4*i+0],u16[4*i+1],u16[4*i+2],u16[4*i+3]};
         }
     };
-/*
-    auto copy_vec4f = [&](const std::string& attr,cgp::numarray<cgp::vec4>& dst){ 
-        auto it = prim.attributes.find(attr);
-        if(it==prim.attributes.end()) return;
-        const auto& acc  = model.accessors[it->second];
-        const auto& view = model.bufferViews[acc.bufferView];
-        const auto& buf  = model.buffers[view.buffer];
-        const float* f = reinterpret_cast<const float*>(
-        buf.data.data()+view.byteOffset+acc.byteOffset);
-        dst.resize(acc.count);
-        for(size_t i=0;i<acc.count;++i)
-        dst[i] = {f[4*i],f[4*i+1],f[4*i+2],f[4*i+3]};
-    };
-
-
-*/
 
     auto copy_vec4f = [&](const std::string& attr,
                       cgp::numarray<cgp::vec4>& dst)
