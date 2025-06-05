@@ -8,8 +8,8 @@ struct angler_actor final : public npc_actor {
     float tail_frequency = 0.3f;   // Hz – whole-body beat
     float tail_amplitude = 0.25f;  // rad
     float fin_amplitude  = 0.20f;
-    float jaw_amplitude  = 0.0030f;
-    float lamp_amplitude = 0.15f;
+    float jaw_amplitude  = 0.00040f;
+    float lamp_amplitude = 0.015f;
     cgp::rotation_transform base_rotation;
 
     void initialize(cgp::opengl_shader_structure const& shader,

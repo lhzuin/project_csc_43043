@@ -70,11 +70,9 @@ void scene_structure::loop_initialize()
     // ───────────────────────────────────────────────────────────────────
     // Reset the “difficulty timer” so shark‐speed starts fresh
     gameplay_time = 0.0f;
-    spawn_shark();
-    angler.initialize(actor_shader,
-            project::path + "assets/anglerfish/scene.gltf",
-            project::path + "assets/anglerfish/textures/unshaded_angler_baseColor.png");
-    angler.start_position(turtle);
+    npcs.clear();
+
+    spawn_npc();
 
     
 }
@@ -121,6 +119,13 @@ void scene_structure::initialize()
     fish.initialize(fish_instanced_shader,
                     project::path + "assets/blue_powder_tang/scene.gltf",
                     project::path + "assets/blue_powder_tang/textures/Material.002_baseColor.png");
+
+    shark_proto.initialize(actor_shader,
+        project::path + "assets/shark/scene.gltf",
+        project::path + "assets/shark/textures/SharkBody.png");
+    angler_proto.initialize(actor_shader,
+        project::path + "assets/anglerfish/scene.gltf",
+        project::path + "assets/anglerfish/textures/unshaded_angler_baseColor.png");
 
     // ───────────────────────────────────────────────────────────────────
     environment.caustic_array_tex = create_texture_array_from_sequence(
@@ -171,20 +176,26 @@ void scene_structure::initialize()
 }
 
 
-void scene_structure::spawn_shark()
+void scene_structure::spawn_npc()
 {
-    if (sharks.size() == 0){
-        shark_actor s;
-        s.initialize(actor_shader,
-            project::path + "assets/shark/scene.gltf",
-            project::path + "assets/shark/textures/SharkBody.png");
-        sharks.push_back(std::move(s));
+    // Decide randomly: 50% chance shark, 50% chance angler
+    float r = (float)rand() / (float)RAND_MAX;
+    if (r < 0.5f) {
+        // Copy from shark_proto
+        auto new_shark = std::make_unique<shark_actor>(shark_proto);
+        new_shark->start_position(turtle);
+        // Immediately ramp speed by difficulty:
+        new_shark->speed += speed_increase_rate * gameplay_time;
+        npcs.push_back(std::move(new_shark));
     }
-    sharks[0].start_position(turtle);
-
-    // Immediately ramp that new shark’s speed up by (speed_increase_rate * gameplay_time)
-    // so that it’s already “as fast as” any shark would be at this point
-    sharks[0].speed += speed_increase_rate * gameplay_time;
+    else {
+        // Copy from angler_proto
+        auto new_angler = std::make_unique<angler_actor>(angler_proto);
+        new_angler->start_position(turtle);
+        // We could also apply some difficulty‐based speed change if needed:
+        new_angler->speed += speed_increase_rate * gameplay_time;
+        npcs.push_back(std::move(new_angler));
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -293,34 +304,32 @@ void scene_structure::display_frame()
         fish.animate(timer.t);
         fish.draw(environment, camera_projection);
 
-        angler.update_position(dt);   // your steering
-        angler.animate(timer.t);      // <<< add this
-        draw(angler.drawable, environment);
+        // Update & draw all NPCs in the single vector:
+        for (size_t i = 0; i < npcs.size(); ++i) {
+            auto & actor = npcs[i];
 
-        /* ======== SHARK ======== */
-        shark_actor& sh = sharks[0];
-        // Increase shark.speed by a bit each second
-        sh.speed += speed_increase_rate * dt;
-        sh.update_position(dt);
-        sh.animate(timer.t);
-        draw(sh.drawable, environment);
+            // Move (only sharks have update_position, but angler inherits from npc_actor too)
+            actor->update_position(dt);
+            actor->animate(timer.t);
+            draw(actor->drawable, environment);
 
-        // Collision check: if not eaten, allow respawn; otherwise set game_over = true
-        if (!sh.check_for_collision(turtle)) {
-            if (sh.check_for_end_of_life()) {
-                spawn_shark();
+            // Collision check against turtle:
+            if (actor->check_for_collision(turtle)) {
+                // Game over:
+                game_over = true;
+                float final_score = timer.t - start_time;
+                if (final_score > high_score)
+                    high_score = final_score;
+                break;
             }
-        }
-        else {
-            // Turtle was caught ⇒ switch to game‐over state
-            game_over = true;
 
-            // 1) Final score = total seconds survived
-            float final_score = timer.t - start_time;
-
-            // 2) If this run beats the current high, update:
-            if (final_score > high_score) {
-                high_score = final_score;
+            // If this NPC is “out of bounds” (i.e. end_of_life), remove & respawn
+            if (actor->check_for_end_of_life()) {
+                // Erase this NPC, then spawn a new random one:
+                npcs.erase(npcs.begin() + i);
+                spawn_npc();
+                // Don’t increment i (we removed current), but continue loop:
+                --i;
             }
         }
 
@@ -448,7 +457,6 @@ void scene_structure::display_frame()
     if (gui.display_frame)
         draw(global_frame, environment);
     if (gui.display_wireframe) {
-        draw_wireframe(shark.drawable, environment);
         draw_wireframe(turtle.drawable, environment);
     }
 }

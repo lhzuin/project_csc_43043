@@ -31,12 +31,14 @@ struct scene_structure : cgp::scene_inputs_generic {
     window_structure               window;
 
 
-    std::vector<shark_actor> sharks;   // we’ll keep only one shark alive at a time
+    std::vector<std::unique_ptr<npc_actor>> npcs;
+
+    shark_actor  shark_proto;
+    angler_actor angler_proto;
 
     // helper to spawn one shark
-    void spawn_shark();
+    void spawn_npc();
 
-	shark_actor shark;
 
 	// Collision mechanism
 	bool   game_over   = false;
@@ -56,7 +58,6 @@ struct scene_structure : cgp::scene_inputs_generic {
 
     nemo_actor nemo;
     fish_actor fish;
-    angler_actor angler;
 
     timer_basic timer;
     //Track the high score over the entire game session:

@@ -18,8 +18,8 @@ void angler_actor::initialize(cgp::opengl_shader_structure const& shader,
         {"Tail2",  {10 }},          // tail_3_08
         {"FinL",   {11,12}},        // left fins
         {"FinR",   {13,14}},        // right fins
-        {"Jaw",    {6}},//{ 5, 6 }},       // first two mouth bones
-        {"Lamp",   { 3 }}           // lantern_1_02 (tip will follow)
+        {"Jaw",    {2,5,7}},//{ 5, 6, 7}},       // first two mouth bones
+        {"Lamp",   { 4 }}           // lantern_1_02 (tip will follow)
     };
 
     float s = 1.0f / 40.0f;
@@ -66,10 +66,7 @@ void angler_actor::animate(float t)
 
     /* --- (c) jaw -------------------------------------------------------- */
     float jaw = jaw_amplitude * cgp::clamp( std::sin(w*t), 0.f, 1.f );  // open only half cycle
-    rotate_group("Jaw", {0,0,1}, jaw);
-
-    /* --- (d) lamp bob --------------------------------------------------- */
-    //rotate_group("Lamp", {1,0,0}, lamp_amplitude * sin(w*t*0.7f));
+    rotate_group("Jaw", {0,1,0}, jaw);
 
     upload_pose_to_gpu();          // push updated matrices to the shader
 }
@@ -92,7 +89,7 @@ bool angler_actor::check_for_collision(skinned_actor  const& actor){
 
     // 4) Cylinder dimensions (shark) in its local space:
     //    shrinkXY lets you “cut off” fins, shrinkZ shortens the height if desired
-    constexpr float shrinkXY = 0.5f;
+    constexpr float shrinkXY = 1.0f;
     constexpr float shrinkZ  = 0.6f;
     cgp::vec3   E1     = res->half_extents;               // (Ex, Ey, Ez)
     float  radius = std::max(E1.x, E1.y) * shrinkXY; // cylinder radius
