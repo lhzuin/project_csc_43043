@@ -136,6 +136,11 @@ void ParticleSystem::upload_frame_uniforms(cgp::mat4 const& view_matrix,
                                            cgp::mat4 const& proj_matrix,
                                            cgp::vec3 const& light_pos, float time)
 {
+    if(world_frame){
+        environment.camera_view = view_matrix;
+        environment.light = light_pos;
+    }
+    
     GLuint pid = sphere.shader.id;
     glUseProgram(pid);
 

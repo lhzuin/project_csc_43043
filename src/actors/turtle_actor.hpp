@@ -20,15 +20,15 @@ struct turtle_actor final: public skinned_actor {
 
     // ─── Oscillation parameters ─────────────────────────────────────────
     // These control how large/frequent the involuntary drift is in each axis:
-    float osc_amp_x       = 0.05f;      // max ±0.03 units along X
-    float osc_amp_y       = 0.04f;      // max ±0.02 units along Y
-    float osc_freq_x      = 0.31f;       // ~0.7 Hz along X
-    float osc_freq_y      = 0.7f;       // ~1.1 Hz along Y
-    float osc_phase_x     = 0.0f;       // random phase offset in [0,2π]
-    float osc_phase_y     = 0.0f;       // random phase offset in [0,2π]
+    float osc_amp_x = 0.05f;      // max ±0.03 units along X
+    float osc_amp_y = 0.04f;      // max ±0.02 units along Y
+    float osc_freq_x = 0.31f;       // ~0.7 Hz along X
+    float osc_freq_y = 0.7f;       // ~1.1 Hz along Y
+    float osc_phase_x = 0.0f;       // random phase offset in [0,2π]
+    float osc_phase_y = 0.0f;       // random phase offset in [0,2π]
     
     //rotation_transform base_rotation;
-    cgp::rotation_transform base_rotation; // cgp::rotation_transform::from_axis_angle({ 1, 0, 0 }, Pi / 2.0f);
+    cgp::rotation_transform base_rotation; 
 
     // --- new for smoothing ---
     float current_yaw = 0.0f;

@@ -42,35 +42,31 @@ vec2 randomDisk(in float s) {
 void main()
 {
     float instance_seed = instance_seed3.x;
-    // ─── 1) Compute per‐instance Z “initial offset” and current Z position ───────
+    // ─── 1) Per-instance vertical motion (-Y) ──────────────────────────
+    float y_offset0 = fall_depth * rand1(instance_seed + 0.789);   // start height
+    float y_raw     = y_offset0 + speed * time;                    // runway
+    // wrap so the value stays in [-1, fall_depth -1]
+    float y_final   = -fract( y_raw / fall_depth ) * fall_depth;  + fall_depth - 1; // ↓↓↓
 
-    // (A) generate each instance’s “starting Z” once
-    float z_offset0 = fall_depth * rand1(instance_seed + 0.789);
-
-    // (B) now use the real time uniform to drive downward motion
-    float z_raw = z_offset0 + speed * time;
-
-    // (C) wrap around so that when z < –fall_depth it jumps back up to 0
-    float z_final = -fract( z_raw / fall_depth ) * fall_depth + fall_depth - 1;
-
-    // ─── 2) Spread in X/Y on disk ────────────────────────────────────────────────
-    vec2 baseXY = randomDisk(instance_seed);
+    // ─── 2) Spread in X/Z on disk ────────────────────────────────────────────────
+    vec2 baseXZ = randomDisk(instance_seed); 
 
     // ─── 3) Add swirl in X/Y ───────────────────────────────────────────────────
     float swirl_phase = 6.2831853 * rand1(instance_seed + 1.234);
     float swirl = swirl_strength * sin(time * 0.5 + swirl_phase);
     float ca = cos(swirl);
     float sa = sin(swirl);
-    vec2 XY = vec2(
-        baseXY.x * ca - baseXY.y * sa,
-        baseXY.x * sa + baseXY.y * ca
-    );
+
+    // Rotate the (x,z) vector by ±swirl
+    vec2 XZ = vec2(                       //  <----- this line is the only
+        baseXZ.x * ca - baseXZ.y * sa,    //        thing that changed
+        baseXZ.x * sa + baseXZ.y * ca);
 
     // ─── 4) Build per‐instance translation matrix T ──────────────────────────────
     mat4 T = mat4(1.0);
-    T[3].x = XY.x;
-    T[3].y = z_final;
-    T[3].z = XY.y;
+    T[3].x = XZ.x;   // spread in X
+    T[3].y = y_final;    // fall along –Y
+    T[3].z = XZ.y;   // spread in Z
 
     // 7) final position:
     vec4 worldPos = model * T * vec4(vertex_position, 1.0);

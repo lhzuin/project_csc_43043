@@ -47,38 +47,39 @@ struct ParticleParameters{
 struct ParticleSystem {
 
     // ──────────────── mesh & shader ─────────────────────
-    mesh_drawable          sphere;           ///< one tiny sphere drawn instanced
-    int                    max_instances    = 0;    ///< how big the per‐instance seed array is
+    mesh_drawable sphere;           ///< one tiny sphere drawn instanced
+    int max_instances    = 0;    ///< how big the per‐instance seed array is
 
     // ──────────────── dynamic parameters ─────────────────
-    int                    instance_count   = 1000;  ///< how many instances to draw (≤ max_instances)
-    float                  speed            = 1.0f;  ///< units/sec downward speed (–Z)
-    float                  spread_radius    = 10.0f; ///< X/Y disk radius
-    float                  fall_depth       = 20.0f; ///< Z‐range before wrapping
-    float                  swirl_strength   = 0.4f;  ///< small swirling in X/Y
-    cgp::vec3              color            = {0.8f, 0.9f, 1.0f}; ///< base color
-    float                  alpha            = 0.25f; ///< transparency (0…1)
-    cgp::vec3              fog_color        = {0.85f, 0.94f, 1.0f}; ///< fog mixture
-    float                  fog_distance_max = 30.0f; ///< fade out beyond this
-    environment_structure  environment;
+    int instance_count;  ///< how many instances to draw (≤ max_instances)
+    float speed;  ///< units/sec downward speed (–Z)
+    float spread_radius; ///< X/Z disk radius
+    float fall_depth; ///< Z‐range before wrapping
+    float swirl_strength;  ///< small swirling in X/Y
+    cgp::vec3 color; ///< base color
+    float alpha; ///< transparency (0…1)
+    cgp::vec3 fog_color; ///< fog mixture
+    float fog_distance_max = 30.0f; ///< fade out beyond this
+    environment_structure environment;
     opengl_shader_structure shader;
+    bool world_frame = true; // Decides if the bubbles will be in the world or local frames
 
     // ──────────────── “static” uniform locations ─────────
     // (we store these once so we don’t repeatedly call glGetUniformLocation)
-    GLint                  loc_model        = -1;
-    GLint                  loc_spread       = -1;
-    GLint                  loc_speed        = -1;
-    GLint                  loc_fall         = -1;
-    GLint                  loc_swirl        = -1;
-    GLint                  loc_color        = -1;
-    GLint                  loc_alpha        = -1;
-    GLint                  loc_fog_color    = -1;
-    GLint                  loc_fog_dist     = -1;
+    GLint loc_model = -1;
+    GLint loc_spread = -1;
+    GLint loc_speed = -1;
+    GLint loc_fall = -1;
+    GLint loc_swirl = -1;
+    GLint loc_color = -1;
+    GLint loc_alpha = -1;
+    GLint loc_fog_color = -1;
+    GLint loc_fog_dist = -1;
 
     // ──────────────── per‐frame uniform locations ─────────
-    GLint                  loc_view         = -1;
-    GLint                  loc_proj         = -1;
-    GLint                  loc_light        = -1;
+    GLint loc_view = -1;
+    GLint loc_proj = -1;
+    GLint loc_light = -1;
     GLint loc_time = -1;
 
     /**
