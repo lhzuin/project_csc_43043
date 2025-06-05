@@ -57,17 +57,27 @@ struct scene_structure : cgp::scene_inputs_generic {
     fish_actor fish;
 
     timer_basic timer;
-    // 1) Track the high score over the entire game session:
+    //Track the high score over the entire game session:
     float high_score = 0.0f;
     float start_time;
     float dt;
-
+    
     cgp::vec3 camera_offset;
     ParticleParameters particle_parameters;
     ParticleSystem   particle_system;
 
     ImVec2  splash_size  = {0,0}; // original size, kept for later
     GLuint  splash_tex   = 0;
+
+
+    float outside_timer = 0.0f;   // how long (in seconds) the turtle has been continuously outside
+    float outside_time_limit = 3.0f;   // “predetermined amount of time” allowed outside before game over
+
+    cgp::vec3 bubble_center = { 0,0,0 };
+    float     bubble_radius = 2.0f;
+    bool      warning_issued = false;
+    bool      died_by_drowning = false;   // new: true if turtle ran out of “outside time.”
+
 
     void handle_keyboard_movement();               // poll arrows each frame
     void loop_initialize();  // called once before the loop
@@ -79,6 +89,6 @@ struct scene_structure : cgp::scene_inputs_generic {
     void mouse_click_event();
     void keyboard_event();
     void idle_frame();    // called every frame before display_frame()
-
+    void check_turtle_in_current(float dt);
     void display_info();
 };
