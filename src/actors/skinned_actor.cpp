@@ -46,7 +46,6 @@ void skinned_actor::rotate_group(std::string_view group_name,
     }
 }
 
-
 void skinned_actor::upload_pose_to_gpu() const
 {
     glUseProgram(drawable.shader.id);
@@ -58,6 +57,7 @@ void skinned_actor::upload_pose_to_gpu() const
     }
     glUseProgram(0);
 }
+
 
 
 void skinned_actor::load_from_gltf(const std::string& file,

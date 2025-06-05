@@ -1,0 +1,11 @@
+Model Information:
+* title:	Zorag - Mutant Angler Fish - Rigged and Animated
+* source:	https://sketchfab.com/3d-models/zorag-mutant-angler-fish-rigged-and-animated-2c98ad253ba94fafab8f7d10e90d9958
+* author:	Greeble3d (https://sketchfab.com/Greeble3d)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Zorag - Mutant Angler Fish - Rigged and Animated" (https://sketchfab.com/3d-models/zorag-mutant-angler-fish-rigged-and-animated-2c98ad253ba94fafab8f7d10e90d9958) by Greeble3d (https://sketchfab.com/Greeble3d) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

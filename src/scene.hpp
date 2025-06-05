@@ -11,6 +11,7 @@
 #include "particle_system.hpp"
 #include "actors/nemo_actor.hpp"
 #include "actors/fish_actor.hpp"
+#include "actors/angler_actor.hpp"
 
 // Variables associated to the GUI (buttons, etc)
 struct gui_parameters {
@@ -55,6 +56,7 @@ struct scene_structure : cgp::scene_inputs_generic {
 
     nemo_actor nemo;
     fish_actor fish;
+    angler_actor angler;
 
     timer_basic timer;
     //Track the high score over the entire game session:

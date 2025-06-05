@@ -27,12 +27,28 @@ out struct fragment_data
 /* -------------------------------------------------------------------- */
 void main()
 {
-    /* --------- linear-blend skinning --------------------------------- */
+    /* --------- linear-blend skinning --------------------------------- 
     mat4 skin =
           vertex_weight.x * uBones[int(vertex_joint.x)] +
           vertex_weight.y * uBones[int(vertex_joint.y)] +
           vertex_weight.z * uBones[int(vertex_joint.z)] +
-          vertex_weight.w * uBones[int(vertex_joint.w)];
+          vertex_weight.w * uBones[int(vertex_joint.w)];*/
+
+    /* 1) re-normalise the four weights (protects against rounding issues) */
+    vec4 w = vertex_weight;
+    float invSum = inversesqrt(dot(w, w) + 1e-8);
+    w *= invSum;
+
+    /* 2) add whatever is still missing to joint 0 (root)                */
+    float wRoot = clamp(1.0 - (w.x + w.y + w.z + w.w), 0.0, 1.0);
+
+    /* 3) build the skinning matrix                                       */
+    mat4 skin =
+        wRoot      * uBones[0]                       +
+        w.x * uBones[int(vertex_joint.x)]            +
+        w.y * uBones[int(vertex_joint.y)]            +
+        w.z * uBones[int(vertex_joint.z)]            +
+        w.w * uBones[int(vertex_joint.w)];
 
     vec4 Pskinned = skin * vec4(vertex_position, 1.0);
     vec3 Nskinned = mat3(skin) * vertex_normal;

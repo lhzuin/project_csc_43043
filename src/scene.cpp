@@ -71,6 +71,10 @@ void scene_structure::loop_initialize()
     // Reset the “difficulty timer” so shark‐speed starts fresh
     gameplay_time = 0.0f;
     spawn_shark();
+    angler.initialize(actor_shader,
+            project::path + "assets/anglerfish/scene.gltf",
+            project::path + "assets/anglerfish/textures/unshaded_angler_baseColor.png");
+    angler.start_position(turtle);
 
     
 }
@@ -288,6 +292,10 @@ void scene_structure::display_frame()
         /* ======== FISHES ======== */
         fish.animate(timer.t);
         fish.draw(environment, camera_projection);
+
+        angler.update_position(dt);   // your steering
+        angler.animate(timer.t);      // <<< add this
+        draw(angler.drawable, environment);
 
         /* ======== SHARK ======== */
         shark_actor& sh = sharks[0];
