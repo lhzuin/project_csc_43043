@@ -176,7 +176,7 @@ void scene_structure::spawn_shark()
             project::path + "assets/shark/textures/SharkBody.png");
         sharks.push_back(std::move(s));
     }
-    sharks[0].start_position(turtle);
+    sharks[0].start_position(turtle, timer.t);
 
     // Immediately ramp that new shark’s speed up by (speed_increase_rate * gameplay_time)
     // so that it’s already “as fast as” any shark would be at this point
