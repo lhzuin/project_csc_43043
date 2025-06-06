@@ -1,5 +1,5 @@
 src/actors/fish_actor.o: src/actors/fish_actor.cpp \
-  src/actors/fish_actor.hpp src/actors/skinned_actor.hpp \
+  include/actors/fish_actor.hpp include/actors/skinned_actor.hpp \
   ../../cgp/library/cgp/cgp.hpp ../../cgp/library/cgp/cgp_parameters.hpp \
   ../../cgp/library/cgp/01_base/base.hpp \
   ../../cgp/library/cgp/01_base/error/error.hpp \
@@ -165,10 +165,11 @@ src/actors/fish_actor.o: src/actors/fish_actor.cpp \
   ../../cgp/library/cgp/20_format_parser/mesh_loader/obj_advanced/obj_advanced.hpp \
   ../../cgp/library/cgp/21_scene_project_helper/scene_project_helper.hpp \
   ../../cgp/library/cgp/21_scene_project_helper/path/path.hpp \
-  src/actors/../loader/gltf_loader.hpp external/tinygltf/tiny_gltf.h \
-  src/actors/../loader/gpu_skin_helper.hpp src/actors/../environment.hpp
-src/actors/fish_actor.hpp:
-src/actors/skinned_actor.hpp:
+  include/actors/../loader/gltf_loader.hpp external/tinygltf/tiny_gltf.h \
+  include/actors/../loader/gpu_skin_helper.hpp \
+  include/actors/../environment.hpp include/environment.hpp
+include/actors/fish_actor.hpp:
+include/actors/skinned_actor.hpp:
 ../../cgp/library/cgp/cgp.hpp:
 ../../cgp/library/cgp/cgp_parameters.hpp:
 ../../cgp/library/cgp/01_base/base.hpp:
@@ -335,7 +336,8 @@ src/actors/skinned_actor.hpp:
 ../../cgp/library/cgp/20_format_parser/mesh_loader/obj_advanced/obj_advanced.hpp:
 ../../cgp/library/cgp/21_scene_project_helper/scene_project_helper.hpp:
 ../../cgp/library/cgp/21_scene_project_helper/path/path.hpp:
-src/actors/../loader/gltf_loader.hpp:
+include/actors/../loader/gltf_loader.hpp:
 external/tinygltf/tiny_gltf.h:
-src/actors/../loader/gpu_skin_helper.hpp:
-src/actors/../environment.hpp:
+include/actors/../loader/gpu_skin_helper.hpp:
+include/actors/../environment.hpp:
+include/environment.hpp:

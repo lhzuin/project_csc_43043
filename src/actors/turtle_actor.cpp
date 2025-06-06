@@ -1,7 +1,7 @@
-#include "turtle_actor.hpp"
+#include "include/actors/turtle_actor.hpp"
 #include "cgp/cgp.hpp"
 #include <random>
-#include "../environment.hpp"
+#include "include/environment.hpp"
 
 rotation_transform base_rotation = rotation_transform::from_axis_angle({ 1, 0, 0 }, Pi / 2.0f);
 

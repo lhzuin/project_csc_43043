@@ -1,7 +1,7 @@
-#include "fish_actor.hpp"
+#include "include/actors/fish_actor.hpp"
 #include "cgp/cgp.hpp"
 #include <random>
-#include "../environment.hpp"
+#include "include/environment.hpp"
 
 inline cgp::vec3 rotate(const rotation_transform& R, const cgp::vec3& v)
 {

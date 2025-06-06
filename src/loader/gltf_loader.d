@@ -1,5 +1,5 @@
 src/loader/gltf_loader.o: src/loader/gltf_loader.cpp \
-  src/loader/gltf_loader.hpp ../../cgp/library/cgp/cgp.hpp \
+  include/loader/gltf_loader.hpp ../../cgp/library/cgp/cgp.hpp \
   ../../cgp/library/cgp/cgp_parameters.hpp \
   ../../cgp/library/cgp/01_base/base.hpp \
   ../../cgp/library/cgp/01_base/error/error.hpp \
@@ -167,7 +167,7 @@ src/loader/gltf_loader.o: src/loader/gltf_loader.cpp \
   ../../cgp/library/cgp/21_scene_project_helper/path/path.hpp \
   external/tinygltf/tiny_gltf.h external/tinygltf/json.hpp \
   external/tinygltf/stb_image.h external/tinygltf/stb_image_write.h
-src/loader/gltf_loader.hpp:
+include/loader/gltf_loader.hpp:
 ../../cgp/library/cgp/cgp.hpp:
 ../../cgp/library/cgp/cgp_parameters.hpp:
 ../../cgp/library/cgp/01_base/base.hpp:

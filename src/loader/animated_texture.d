@@ -1,5 +1,5 @@
 src/loader/animated_texture.o: src/loader/animated_texture.cpp \
-  external/tinygltf/stb_image.h src/loader/animated_texture.hpp \
+  external/tinygltf/stb_image.h include/loader/animated_texture.hpp \
   ../../cgp/library/cgp/cgp.hpp ../../cgp/library/cgp/cgp_parameters.hpp \
   ../../cgp/library/cgp/01_base/base.hpp \
   ../../cgp/library/cgp/01_base/error/error.hpp \
@@ -166,7 +166,7 @@ src/loader/animated_texture.o: src/loader/animated_texture.cpp \
   ../../cgp/library/cgp/21_scene_project_helper/scene_project_helper.hpp \
   ../../cgp/library/cgp/21_scene_project_helper/path/path.hpp
 external/tinygltf/stb_image.h:
-src/loader/animated_texture.hpp:
+include/loader/animated_texture.hpp:
 ../../cgp/library/cgp/cgp.hpp:
 ../../cgp/library/cgp/cgp_parameters.hpp:
 ../../cgp/library/cgp/01_base/base.hpp:

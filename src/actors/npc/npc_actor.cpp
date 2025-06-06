@@ -1,4 +1,4 @@
-#include "npc_actor.hpp"
+#include "include/actors/npc/npc_actor.hpp"
 #include "cgp/cgp.hpp"
 
 bool npc_actor::check_for_end_of_life(){

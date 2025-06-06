@@ -1,6 +1,6 @@
 // npc_actor.hpp
 #pragma once
-#include "skinned_actor.hpp"
+#include "../skinned_actor.hpp"
 #include "cgp/cgp.hpp"
 
 /// A specialized skinned_actor with autonomous swimming behavior

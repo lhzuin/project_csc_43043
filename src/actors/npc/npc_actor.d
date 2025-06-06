@@ -1,5 +1,7 @@
-src/particle_system.o: src/particle_system.cpp src/particle_system.hpp \
-  ../../cgp/library/cgp/cgp.hpp ../../cgp/library/cgp/cgp_parameters.hpp \
+src/actors/npc/npc_actor.o: src/actors/npc/npc_actor.cpp \
+  include/actors/npc/npc_actor.hpp \
+  include/actors/npc/../skinned_actor.hpp ../../cgp/library/cgp/cgp.hpp \
+  ../../cgp/library/cgp/cgp_parameters.hpp \
   ../../cgp/library/cgp/01_base/base.hpp \
   ../../cgp/library/cgp/01_base/error/error.hpp \
   ../../cgp/library/cgp/01_base/basic_types/basic_types.hpp \
@@ -164,8 +166,11 @@ src/particle_system.o: src/particle_system.cpp src/particle_system.hpp \
   ../../cgp/library/cgp/20_format_parser/mesh_loader/obj_advanced/obj_advanced.hpp \
   ../../cgp/library/cgp/21_scene_project_helper/scene_project_helper.hpp \
   ../../cgp/library/cgp/21_scene_project_helper/path/path.hpp \
-  src/environment.hpp
-src/particle_system.hpp:
+  include/actors/npc/../../loader/gltf_loader.hpp \
+  external/tinygltf/tiny_gltf.h \
+  include/actors/npc/../../loader/gpu_skin_helper.hpp
+include/actors/npc/npc_actor.hpp:
+include/actors/npc/../skinned_actor.hpp:
 ../../cgp/library/cgp/cgp.hpp:
 ../../cgp/library/cgp/cgp_parameters.hpp:
 ../../cgp/library/cgp/01_base/base.hpp:
@@ -332,4 +337,6 @@ src/particle_system.hpp:
 ../../cgp/library/cgp/20_format_parser/mesh_loader/obj_advanced/obj_advanced.hpp:
 ../../cgp/library/cgp/21_scene_project_helper/scene_project_helper.hpp:
 ../../cgp/library/cgp/21_scene_project_helper/path/path.hpp:
-src/environment.hpp:
+include/actors/npc/../../loader/gltf_loader.hpp:
+external/tinygltf/tiny_gltf.h:
+include/actors/npc/../../loader/gpu_skin_helper.hpp:

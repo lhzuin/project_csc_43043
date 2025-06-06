@@ -1,5 +1,5 @@
 #include <stb_image.h>
-#include "animated_texture.hpp"
+#include "include/loader/animated_texture.hpp"
 #include <cstdio>
 #include <iostream>
 

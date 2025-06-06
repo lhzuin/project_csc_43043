@@ -1,14 +1,14 @@
 
 
 #include "cgp/cgp.hpp" // Give access to the complete CGP library
-#include "environment.hpp" // The general scene environment + project variable
+#include "include/environment.hpp" // The general scene environment + project variable
 #include <iostream> 
 
 #include <chrono>
 #include <thread>
 
 // Custom scene of this code
-#include "scene.hpp"
+#include "include/scene.hpp"
 
 
 
@@ -159,7 +159,7 @@ void initialize_default_shaders()
 	triangles_drawable::default_texture.initialize_texture_2d_on_gpu(white_image);
 
 	// Set standard uniform color for curve/segment_drawable
-	curve_drawable::default_shader.load(default_path_shaders +"single_color/single_color.vert.glsl", default_path_shaders+"single_color/single_color.frag.glsl");
+	//curve_drawable::default_shader.load(default_path_shaders +"single_color/single_color.vert.glsl", default_path_shaders+"single_color/single_color.frag.glsl");
 }
 
 

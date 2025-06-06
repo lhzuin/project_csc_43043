@@ -1,7 +1,7 @@
 #define TINYGLTF_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION  
 #define STB_IMAGE_WRITE_IMPLEMENTATION 
-#include "gltf_loader.hpp"
+#include "include/loader/gltf_loader.hpp"
 #include "cgp/cgp.hpp"
 using namespace cgp;
 

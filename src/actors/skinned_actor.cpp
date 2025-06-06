@@ -1,4 +1,4 @@
-#include "skinned_actor.hpp"
+#include "include/actors/skinned_actor.hpp"
 #include "cgp/cgp.hpp"
 
 // Static cache

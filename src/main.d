@@ -164,14 +164,16 @@ src/main.o: src/main.cpp ../../cgp/library/cgp/cgp.hpp \
   ../../cgp/library/cgp/20_format_parser/mesh_loader/obj_advanced/obj_advanced.hpp \
   ../../cgp/library/cgp/21_scene_project_helper/scene_project_helper.hpp \
   ../../cgp/library/cgp/21_scene_project_helper/path/path.hpp \
-  src/environment.hpp src/scene.hpp src/loader/gltf_loader.hpp \
-  external/tinygltf/tiny_gltf.h src/loader/gpu_skin_helper.hpp \
-  src/actors/skinned_actor.hpp src/actors/../loader/gltf_loader.hpp \
-  src/actors/../loader/gpu_skin_helper.hpp src/actors/shark_actor.hpp \
-  src/actors/npc_actor.hpp src/actors/turtle_actor.hpp \
-  src/particle_system.hpp src/actors/nemo_actor.hpp \
-  src/actors/fish_actor.hpp src/actors/../environment.hpp \
-  src/actors/angler_actor.hpp
+  include/environment.hpp include/scene.hpp \
+  include/loader/gltf_loader.hpp external/tinygltf/tiny_gltf.h \
+  include/loader/gpu_skin_helper.hpp include/actors/skinned_actor.hpp \
+  include/actors/../loader/gltf_loader.hpp \
+  include/actors/../loader/gpu_skin_helper.hpp \
+  include/actors/npc/shark_actor.hpp include/actors/npc/npc_actor.hpp \
+  include/actors/npc/../skinned_actor.hpp \
+  include/actors/turtle_actor.hpp include/particles/particle_system.hpp \
+  include/actors/nemo_actor.hpp include/actors/fish_actor.hpp \
+  include/actors/../environment.hpp include/actors/npc/angler_actor.hpp
 ../../cgp/library/cgp/cgp.hpp:
 ../../cgp/library/cgp/cgp_parameters.hpp:
 ../../cgp/library/cgp/01_base/base.hpp:
@@ -338,19 +340,20 @@ src/main.o: src/main.cpp ../../cgp/library/cgp/cgp.hpp \
 ../../cgp/library/cgp/20_format_parser/mesh_loader/obj_advanced/obj_advanced.hpp:
 ../../cgp/library/cgp/21_scene_project_helper/scene_project_helper.hpp:
 ../../cgp/library/cgp/21_scene_project_helper/path/path.hpp:
-src/environment.hpp:
-src/scene.hpp:
-src/loader/gltf_loader.hpp:
+include/environment.hpp:
+include/scene.hpp:
+include/loader/gltf_loader.hpp:
 external/tinygltf/tiny_gltf.h:
-src/loader/gpu_skin_helper.hpp:
-src/actors/skinned_actor.hpp:
-src/actors/../loader/gltf_loader.hpp:
-src/actors/../loader/gpu_skin_helper.hpp:
-src/actors/shark_actor.hpp:
-src/actors/npc_actor.hpp:
-src/actors/turtle_actor.hpp:
-src/particle_system.hpp:
-src/actors/nemo_actor.hpp:
-src/actors/fish_actor.hpp:
-src/actors/../environment.hpp:
-src/actors/angler_actor.hpp:
+include/loader/gpu_skin_helper.hpp:
+include/actors/skinned_actor.hpp:
+include/actors/../loader/gltf_loader.hpp:
+include/actors/../loader/gpu_skin_helper.hpp:
+include/actors/npc/shark_actor.hpp:
+include/actors/npc/npc_actor.hpp:
+include/actors/npc/../skinned_actor.hpp:
+include/actors/turtle_actor.hpp:
+include/particles/particle_system.hpp:
+include/actors/nemo_actor.hpp:
+include/actors/fish_actor.hpp:
+include/actors/../environment.hpp:
+include/actors/npc/angler_actor.hpp:

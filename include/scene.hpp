@@ -6,12 +6,12 @@
 #include "loader/gltf_loader.hpp"
 #include "loader/gpu_skin_helper.hpp" 
 #include "actors/skinned_actor.hpp"
-#include "actors/shark_actor.hpp"
+#include "actors/npc/shark_actor.hpp"
 #include "actors/turtle_actor.hpp"
-#include "particle_system.hpp"
+#include "particles/particle_system.hpp"
 #include "actors/nemo_actor.hpp"
 #include "actors/fish_actor.hpp"
-#include "actors/angler_actor.hpp"
+#include "actors/npc/angler_actor.hpp"
 
 // Variables associated to the GUI (buttons, etc)
 struct gui_parameters {

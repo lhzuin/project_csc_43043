@@ -1,5 +1,5 @@
 // File: src/particle_system.cpp
-#include "particle_system.hpp"
+#include "include/particles/particle_system.hpp"
 #include <random>
 
 using namespace cgp;
