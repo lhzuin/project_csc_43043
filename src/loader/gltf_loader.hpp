@@ -1,10 +1,8 @@
 #pragma once
 // gltf_loader.hpp
-// Forward-declaration of the helper that converts a .gltf / .glb into a cgp::mesh
-// The implementation lives in gltf_loader.cpp
 
 #include <string>
-#include "cgp/cgp.hpp"   // brings in cgp::mesh
+#include "cgp/cgp.hpp"
 #include "tiny_gltf.h"
 
 
@@ -17,13 +15,13 @@
  */
 
  struct gltf_geometry_and_texture {
-    cgp::mesh          geom;        // positions, normals, uv, connectivity …
+    cgp::mesh geom; // positions, normals, uv, connectivity …
     cgp::opengl_texture_image_structure tex;
 
     cgp::numarray<cgp::uint4> joint_index;   // JOINTS_0
-    cgp::numarray<cgp::vec4>  joint_weight;  // WEIGHTS_0
+    cgp::numarray<cgp::vec4> joint_weight;  // WEIGHTS_0
 
-    std::vector<cgp::mat4>    inverse_bind;  // one per joint
-    std::vector<int>          joint_node;    // maps joint → node index
+    std::vector<cgp::mat4> inverse_bind;  // one per joint
+    std::vector<int> joint_node;    // maps joint → node index
 };
 gltf_geometry_and_texture mesh_load_file_gltf(const std::string& filename);

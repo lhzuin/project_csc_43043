@@ -1,7 +1,7 @@
 #pragma once
 
 
-#include "cgp/cgp.hpp"   // brings in cgp::mesh
+#include "cgp/cgp.hpp" 
 
 /* Add JOINTS_0 / WEIGHTS_0 attributes to the VAO created by CGP */
 inline void add_skin_attributes(cgp::mesh_drawable& md,

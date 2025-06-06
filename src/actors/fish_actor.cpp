@@ -2,19 +2,15 @@
 #include "cgp/cgp.hpp"
 #include <random>
 #include "../environment.hpp"
-#include <random>
 
 inline cgp::vec3 rotate(const rotation_transform& R, const cgp::vec3& v)
 {
-    return cgp::mat3(R.matrix()) * v;   // mat3-cast extracts the upper-left 3×3
+    return cgp::mat3(R.matrix()) * v;  
 }
-/**
- * Convenience: load, setup texture & joint groups all at once.
- */
+
 void fish_actor::initialize(cgp::opengl_shader_structure const& shader,
                   std::string const& gltf_file,
                   std::string const& texture_file) {
-     // ─── (1) Load the skinned GLTF exactly as before ─────────────────────────
      load_from_gltf(gltf_file, shader);
      drawable.texture.load_and_initialize_texture_2d_on_gpu(
          texture_file, GL_REPEAT, GL_REPEAT);
@@ -26,12 +22,12 @@ void fish_actor::initialize(cgp::opengl_shader_structure const& shader,
          rotation_transform::from_axis_angle({0,0,1}, Pi)
        * rotation_transform::from_axis_angle({1,0,0}, Pi/2.0f);
 
-     // 2) Build 200 random offsets, now with z ∈ [0, 5]:
+    // Build random offsets
     instance_offset.resize(instance_count);
     std::mt19937 eng{ std::random_device{}() };
     std::uniform_real_distribution<float> U01(0.0f, 1.0f);
 
-    float R = 8.0f;    // same disk radius as before
+    float R = 8.0f; 
     for (int i = 0; i < instance_count; ++i) {
         float u = U01(eng);
         float r = R * std::sqrt(u);
@@ -39,16 +35,13 @@ void fish_actor::initialize(cgp::opengl_shader_structure const& shader,
         float x = r * std::cos(theta);
         float y = r * std::sin(theta);
 
-        // New line: pick z uniformly between 0 and 5
         float z = U01(eng) * 5.0f + 1.5f;
 
         instance_offset[i] = { x, y, z };
     }
 
-    // 3) Upload as divisor=1 attribute at location=6 (no change):
     drawable.initialize_supplementary_data_on_gpu(instance_offset, /*loc=*/6, /*div=*/1);
 
-    // 4) Cache & upload all the same “static” uniforms as before:
     GLuint pid = drawable.shader.id;
     glUseProgram(pid);
 
@@ -86,13 +79,8 @@ void fish_actor::start_position() {
 }
 
 
-
-/**
- * Generate wiggling animation on body, tail, fins and jaw.
- */
 void fish_actor::animate(float t) {
 	upload_pose_to_gpu();  
-    // ─── (2) UPLOAD PER‐FRAME UNIFORMS FOR INSTANCING ────────────────────────
     GLuint pid = drawable.shader.id;
     glUseProgram(pid);
 
@@ -103,7 +91,7 @@ void fish_actor::animate(float t) {
 
 
 void fish_actor::draw(environment_structure const& env, cgp::camera_projection_perspective const& camera_projection){
-    // 1) Bind camera view/proj/light to the instanced shader uniforms:
+    // Bind camera view/proj/light to the instanced shader uniforms:
     GLuint pid = drawable.shader.id;
     glUseProgram(pid);
 
@@ -114,7 +102,7 @@ void fish_actor::draw(environment_structure const& env, cgp::camera_projection_p
 
     glUseProgram(0);
 
-    // 2) Draw all 200 instances at once
+    // Draw all instances at once
     glDepthMask(GL_FALSE);
     cgp::draw(drawable, env, instance_count);
     glDepthMask(GL_TRUE);

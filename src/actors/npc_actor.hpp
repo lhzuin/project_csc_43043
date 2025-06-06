@@ -1,4 +1,4 @@
-// shark_actor.hpp
+// npc_actor.hpp
 #pragma once
 #include "skinned_actor.hpp"
 #include "cgp/cgp.hpp"
@@ -6,24 +6,13 @@
 /// A specialized skinned_actor with autonomous swimming behavior
 struct npc_actor : public skinned_actor {
     virtual ~npc_actor() = default;
-    float        speed             = 1.0f;      ///< units per second
-    cgp::vec3    origin            {0,0,0};     ///< current position
-    cgp::vec3    target            {0,0,0};     ///< destination point
-
-    /**
-     * Initializes position and target for the shark
-     */
+    float        speed             = 1.0f; 
+    cgp::vec3    origin            {0,0,0};
+    cgp::vec3    target            {0,0,0};
 
     virtual void start_position(skinned_actor const& target_actor) = 0;
 
-    /**
-     * Swim movement + directional alignment.
-     */
     void update_position(float dt);
-
-    /**
-     * Checks for collision between the shark and another skinned_actor
-     */
 
     virtual bool check_for_collision(skinned_actor const&  actor) = 0;
 

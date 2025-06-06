@@ -55,6 +55,6 @@ void main()
     /* --------- pass to fragment shader ------------------------------- */
     fragment.position = Pworld.xyz;
     fragment.normal   = normalize(mat3(model) * Nskinned);
-    fragment.color    = vertex_color;          // keep original colour
+    fragment.color    = vertex_color;   
     fragment.uv       = vertex_uv;
 }

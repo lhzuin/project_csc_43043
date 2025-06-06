@@ -1,25 +1,22 @@
 #include "angler_actor.hpp"
 #include "cgp/cgp.hpp"
 #include <random>
-/**
- * Convenience: load, setup texture & joint groups all at once.
- */
+
 void angler_actor::initialize(cgp::opengl_shader_structure const& shader,
                 std::string const& gltf_file,
                 std::string const& texture_file) {
-    // load glTF
     load_from_gltf(gltf_file, shader);
     drawable.texture.load_and_initialize_texture_2d_on_gpu(
         texture_file, GL_REPEAT, GL_REPEAT);
     // define joint groups
     groups = {
-        {"Tail0",  { 8 }},          // tail_1_06
-        {"Tail1",  { 9 }},          // tail_2_09
-        {"Tail2",  {10 }},          // tail_3_08
-        {"FinL",   {11,12}},        // left fins
-        {"FinR",   {13,14}},        // right fins
-        {"Jaw",    {2,5,7}},//{ 5, 6, 7}},       // first two mouth bones
-        {"Lamp",   { 4 }}           // lantern_1_02 (tip will follow)
+        {"Tail0",  { 8 }},        
+        {"Tail1",  { 9 }},   
+        {"Tail2",  {10 }},  
+        {"FinL",   {11,12}}, 
+        {"FinR",   {13,14}},
+        {"Jaw",    {2,5,7}},
+        {"Lamp",   { 4 }}
     };
 
     float s = 1.0f / 40.0f;
@@ -33,32 +30,32 @@ auto phase = [](float w, float t, float lag){ return w*t - lag; };
 void angler_actor::start_position(skinned_actor const& target_actor) {
     drawable.model.rotation = base_rotation;
 
-    // 1) Random engines & distributions
+    // Random engines & distributions
     static std::mt19937 engine{ std::random_device{}() };
     std::uniform_real_distribution<float> dist_xz(-5.0f, 5.0f);
     std::uniform_real_distribution<float> dist_target(-target_dist, target_dist);
     std::uniform_real_distribution<float> speed_real(2.0f, 8.0f);
 
-    // 2) Compute how far above the turtle we spawn this time:
+    // Compute how far above the turtle we spawn this time:
     float current_spawn_dist = std::max(min_spawn_distance, spawn_distance);
 
-    // 3) Random X/Z jitter for origin & target‐bias
+    // Random X/Z jitter for origin & target‐bias
     float rnd_x_shark = dist_xz(engine);
     float rnd_z_shark = dist_xz(engine);
     float rnd_x_target = dist_target(engine);
     float rnd_z_target = dist_target(engine);
 
-    // 4) Turtle’s current position in world space:
+    // Turtle’s current position in world space:
     cgp::vec3 turtle_pos = target_actor.drawable.model.translation;
 
-    // 5) Set the shark’s origin “above” the turtle by current_spawn_dist
+    // Set the shark’s origin “above” the turtle by current_spawn_dist
     origin = turtle_pos + cgp::vec3{ rnd_x_shark, current_spawn_dist, rnd_z_shark };
 
-    // 6) Build the swim‐to point (“in front of” turtle + some jitter)
+    // Build the swim‐to point (“in front of” turtle + some jitter)
     target = turtle_pos + cgp::vec3{ rnd_x_target, 0.0f, rnd_z_target };
-    //    Then reflect so that the shark actually moves downward toward that point:
+    // Then reflect so that the shark actually moves downward toward that point:
     target = 2.0f * target - origin;
-    speed = speed_real(engine);                // units/sec
+    speed = speed_real(engine);
     drawable.model.translation = origin;
     spawn_distance -= (float)(std::rand()) / (float)(std::rand())*spawn_decay_rate;
     if (spawn_distance < min_spawn_distance) {
@@ -72,66 +69,46 @@ void angler_actor::start_position(skinned_actor const& target_actor) {
     }
 }
 
-/**
- * Generate wiggling animation on body, tail, fins and jaw.
- */
 void angler_actor::animate(float t)
 {
-    const float w = 2.0f * cgp::Pi * jaw_frequency;       // angular speed
+    const float w = 2.0f * cgp::Pi * jaw_frequency;
 
-    /* --- (a) tail : travelling wave ------------------------------------- 
-    rotate_group("Tail0", {0,0,1},  tail_amplitude * sin( phase(w,t,0.0f) ));
-    rotate_group("Tail1", {0,0,1},  tail_amplitude * sin( phase(w,t,0.6f) ));
-    rotate_group("Tail2", {0,0,1},  tail_amplitude * sin( phase(w,t,1.2f) ));*/
-
-    /* --- (b) pectoral fins --------------------------------------------- */
-    //float fin = fin_amplitude * sin(w*t + cgp::Pi*0.5f);
-    //rotate_group("FinL", {0,1,0},  fin);    // mirror them  
-    //rotate_group("FinR", {0,1,0}, -fin);
-
-    /* --- (c) jaw -------------------------------------------------------- */
-    float jaw = jaw_amplitude * cgp::clamp( std::sin(w*t), 0.f, 1.f );  // open only half cycle
+    float jaw = jaw_amplitude * cgp::clamp( std::sin(w*t), 0.f, 1.f ); 
     rotate_group("Jaw", {0,1,0}, jaw);
 
-    upload_pose_to_gpu();          // push updated matrices to the shader
+    upload_pose_to_gpu(); 
 }
 
 bool angler_actor::check_for_collision(skinned_actor  const& actor){
-    // 1) Get shark‐local frame and world‐space centers of each actor’s bounding‐box center:
+    // Get angler‐local frame and world‐space centers of each actor’s bounding‐box center:
     cgp::mat4 M1     = drawable.model.matrix();
     cgp::vec3 C1     = (M1 * cgp::vec4(res->center_offset, 1)).xyz();
     cgp::mat4 M2     = actor.drawable.model.matrix();
     cgp::vec3 C2     = (M2 * cgp::vec4(actor.res->center_offset, 1)).xyz();
 
-    // 2) World‐space delta
+    // World‐space delta
     cgp::vec3 d_world = C2 - C1;
 
-    // 3) Transform delta into shark’s local rotated+scaled space:
-    //    since M1 = T·R·S, we undo R·S by applying (R·S)⁻¹ = S⁻¹·Rᵀ
-    cgp::mat3 RS    = cgp::mat3(M1);         // contains rotation * scale
-    cgp::mat3 invRS = cgp::inverse(RS);      // S⁻¹·Rᵀ
+    // Transform delta into shark’s local rotated+scaled space:
+    cgp::mat3 RS    = cgp::mat3(M1); 
+    cgp::mat3 invRS = cgp::inverse(RS);
     cgp::vec3 d_loc = invRS * d_world;
 
-    // 4) Cylinder dimensions (shark) in its local space:
-    //    shrinkXY lets you “cut off” fins, shrinkZ shortens the height if desired
+    // Cylinder dimensions (shark) in its local space:
     constexpr float shrinkXY = 1.0f;
     constexpr float shrinkZ  = 0.6f;
-    cgp::vec3   E1     = res->half_extents;               // (Ex, Ey, Ez)
-    float  radius = std::max(E1.x, E1.y) * shrinkXY; // cylinder radius
-    float  halfH  = E1.z * shrinkZ;                  // cylinder half‐height
+    cgp::vec3   E1     = res->half_extents;
+    float  radius = std::max(E1.x, E1.y) * shrinkXY;
+    float  halfH  = E1.z * shrinkZ;
 
-    // 5) Box dimensions (other actor) in *shark‐local* axes:
-    //    we’ll treat it as an AABB in this same frame
     cgp::vec3   E2     = actor.res->half_extents;         
 
-    // 6) Horizontal (X–Y) distance from cylinder axis to box:
-    //    if the box spans [–E2.x, +E2.x] in X, the closest X on the box to the axis is:
+    // Horizontal (X–Y) distance from cylinder axis to box:
     float dx = std::max(std::abs(d_loc.x) - E2.x, 0.0f);
     float dy = std::max(std::abs(d_loc.y) - E2.y, 0.0f);
     bool  overlapXY = (dx*dx + dy*dy) <= (radius*radius);
 
-    // 7) Vertical overlap (Z‐axis):
-    //    cylinder is [–halfH, +halfH], box is [d_loc.z–E2.z, d_loc.z+E2.z]
+    // Vertical overlap (Z‐axis):
     bool  overlapZ  = std::abs(d_loc.z) <= (halfH + E2.z);
 
     return overlapXY && overlapZ;

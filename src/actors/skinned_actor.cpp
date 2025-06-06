@@ -5,9 +5,7 @@
 static std::unordered_map<std::string,
     std::shared_ptr<ActorResources>> resource_cache;
 
-//-----------------------------------------------------------------------------
-// ActorResources
-//-----------------------------------------------------------------------------
+
 void ActorResources::compute_radius() {
     cgp::vec3 pmin, pmax;
     geometry.get_bounding_box_position(pmin, pmax);
@@ -34,8 +32,8 @@ void skinned_actor::rotate_group(std::string_view group_name,
     cgp::vec3 axis, float angle_rad)
 {
     auto it = groups.find(std::string(group_name));
-    if (it == groups.end()) return;              // unknown group → no-op
-    for (int j : it->second)                     // all joints in group
+    if (it == groups.end()) return; 
+    for (int j : it->second) // all joints in group
     {
         cgp::mat4 bind = inverse( res->inverse_bind[j] );  // rest-pose
         cgp::mat4 R = cgp::affine_rt(
@@ -66,7 +64,6 @@ void skinned_actor::load_from_gltf(const std::string& file,
    // Lookup or fill the cache
     auto it = resource_cache.find(file);
     if(it == resource_cache.end()) {
-        // load glTF once
         gltf_geometry_and_texture data = mesh_load_file_gltf(file);
 
         auto R = std::make_shared<ActorResources>();
@@ -98,12 +95,12 @@ void skinned_actor::load_from_gltf(const std::string& file,
     reset_pose();
 
     // copy the shared VAO/VBO into our own drawable
-    drawable = res->prototype;  // shallow copy of handles is fine
+    drawable = res->prototype;
 }
 
 
 void skinned_actor::reset_pose()
 {
     for (auto& M : uBones)
-        M = cgp::mat4(1.0f);   // CGP/GLM identity constructor
+        M = cgp::mat4(1.0f);
 }

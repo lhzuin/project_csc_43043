@@ -11,7 +11,7 @@ GLuint create_texture_array_from_sequence(
 {
     if (count <= 0) return 0;
 
-    // --- 1) Load first frame to get width & height ---
+    // Load first frame to get width & height
     char filename[512];
     snprintf(filename, sizeof(filename), 
              (base + "%0*d.%s").c_str(), 
@@ -25,7 +25,7 @@ GLuint create_texture_array_from_sequence(
     }
     stbi_image_free(data);
 
-    // --- 2) Create & bind the array texture ---
+    // Create & bind the array texture
     GLuint tex = 0;
     glGenTextures(1, &tex);
     glBindTexture(GL_TEXTURE_2D_ARRAY, tex);
@@ -40,7 +40,7 @@ GLuint create_texture_array_from_sequence(
                  GL_UNSIGNED_BYTE,
                  nullptr);   // no data yet
 
-    // --- 3) Fill each layer ---
+    // Fill each layer
     for(int i = 0; i < count; ++i) {
         snprintf(filename, sizeof(filename),
                  (base + "%0*d.%s").c_str(),
@@ -54,7 +54,7 @@ GLuint create_texture_array_from_sequence(
             continue;
         }
 
-        // upload into layer i
+        // Upload into layer i
         glTexSubImage3D(GL_TEXTURE_2D_ARRAY,
                         0,      // mip level
                         0, 0, i,// xoffset, yoffset, layer
@@ -65,7 +65,7 @@ GLuint create_texture_array_from_sequence(
         stbi_image_free(layer);
     }
 
-    // --- 4) Set filtering/wrap ---
+    // Set filtering/wrap
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S,     GL_REPEAT);

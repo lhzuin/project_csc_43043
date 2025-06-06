@@ -1,6 +1,6 @@
 #define TINYGLTF_IMPLEMENTATION
-#define STB_IMAGE_IMPLEMENTATION          // let TinyGLTF decode PNG/JPG
-#define STB_IMAGE_WRITE_IMPLEMENTATION     // not strictly required for loading
+#define STB_IMAGE_IMPLEMENTATION  
+#define STB_IMAGE_WRITE_IMPLEMENTATION 
 #include "gltf_loader.hpp"
 #include "cgp/cgp.hpp"
 using namespace cgp;
@@ -20,8 +20,8 @@ static void upload_texture_from_gltf(const tinygltf::Image& img,
     const int w = img.width;
     const int h = img.height;
 
-    /* ----- fill a grid_2D<vec3> with RGB values -------------------------- */
-    grid_2D<vec3> rgb;          // (x = column, y = row)
+    // Fill a grid_2D<vec3> with RGB values
+    grid_2D<vec3> rgb; 
     rgb.resize(w, h);
 
     const unsigned char* src = img.image.data();
@@ -36,32 +36,31 @@ static void upload_texture_from_gltf(const tinygltf::Image& img,
     };
     }
 
-    /* ----- upload -------------------------------------------------------- */
+    // Upload 
     tex.initialize_texture_2d_on_gpu(
-    rgb,                 // <- matches the overload grid_2D<vec3> const&
+    rgb,    
     wrap, wrap,
     /*is_mipmap=*/true);
 }
 
+static cgp::mat4 make_mat4(const float* m);
 
 /* -------------------------------------------------------------------------- */
 /*  mesh_load_file_gltf - minimal loader that fills a cgp::mesh               */
 /* -------------------------------------------------------------------------- */
-/* convert 16 consecutive floats (column-major) to a cgp::mat4 */
-static cgp::mat4 make_mat4(const float* m);
 gltf_geometry_and_texture mesh_load_file_gltf(const std::string& filename)
 {
     tinygltf::TinyGLTF loader;
     tinygltf::Model    model;
     std::string        warn, err;
 
-    /* -------- read .glb (binary) or .gltf (text + externals) -------------- */
+    // Read .glb (binary) or .gltf
     auto load_model_from_file = [&](const std::string& file) -> bool
     {
         auto ext = file.substr(file.find_last_of('.') + 1);
         if (ext == "glb" || ext == "GLB")
             return loader.LoadBinaryFromFile(&model, &err, &warn, file);
-        else                                   // treat everything else as .gltf
+        else // treat everything else as .gltf
             return loader.LoadASCIIFromFile (&model, &err, &warn, file);
     };
 
@@ -70,13 +69,10 @@ gltf_geometry_and_texture mesh_load_file_gltf(const std::string& filename)
         throw std::runtime_error("TinyGLTF error while loading " + filename +
                                 "\nWarn: " + warn + "\nErr : " + err);
     
-    /* ---- for simplicity, use the *first* mesh and *first* primitive ------ */
+    // For simplicity, use the *first* mesh and *first* primitive
     const auto& prim  = model.meshes.at(0).primitives.at(0);
     gltf_geometry_and_texture result;
 
-    /* -------------------------------------------------------------------------- */
-    /*  Helpers that copy attribute data into a numarray<vec3> / numarray<vec2>   */
-    /* -------------------------------------------------------------------------- */
     auto copy_vec3 = [&](const std::string& attr, cgp::numarray<cgp::vec3>& dst)
     {
         auto it = prim.attributes.find(attr);
@@ -172,16 +168,13 @@ gltf_geometry_and_texture mesh_load_file_gltf(const std::string& filename)
     }
 };
 
-    /* -------------------------------------------------------------------------- */
-    /*  Use them for each attribute                                               */
-    /* -------------------------------------------------------------------------- */
     copy_vec3("POSITION"   , result.geom.position);
     copy_vec3("NORMAL"     , result.geom.normal);
     copy_vec2("TEXCOORD_0" , result.geom.uv);
     copy_uint4("JOINTS_0" , result.joint_index);
     copy_vec4f("WEIGHTS_0", result.joint_weight);
 
-    /* ---------------------- indices → connectivity ------------------------ */
+    // indices → connectivity
     if (prim.indices < 0)
         throw std::runtime_error("Primitive has no indices - glTF requires them");
 
@@ -205,11 +198,11 @@ gltf_geometry_and_texture mesh_load_file_gltf(const std::string& filename)
             result.geom.connectivity[t] = { id[3*t], id[3*t+1], id[3*t+2] };
     }
 
-    /* fall-back if normals weren’t provided */
+    // Fall-back if normals weren’t provided
     if (result.geom.normal.size() == 0)
         result.geom.normal_update();
 
-    static std::unordered_map<int,cgp::opengl_texture_image_structure> cache; // key = image index
+    static std::unordered_map<int,cgp::opengl_texture_image_structure> cache; 
 
     int texIndex = -1;
     if (prim.material >= 0) {
@@ -221,16 +214,15 @@ gltf_geometry_and_texture mesh_load_file_gltf(const std::string& filename)
         int imgIndex = model.textures[texIndex].source;
         if (!cache.count(imgIndex))
             upload_texture_from_gltf(model.images[imgIndex], cache[imgIndex]);
-        result.tex = cache[imgIndex];          // store in the struct, **not** in the mesh
+        result.tex = cache[imgIndex];  
     }
 
     if(!model.skins.empty()){
         const tinygltf::Skin& skin = model.skins[0];
     
-        /* joint → node index list */
-        result.joint_node = skin.joints;            // vector<int>
+        result.joint_node = skin.joints;
     
-        /* inverse bind matrices */
+        // Inverse bind matrices
         const auto& accIBM   = model.accessors[skin.inverseBindMatrices];
         const auto& viewIBM  = model.bufferViews[accIBM.bufferView];
         const auto& bufIBM   = model.buffers[viewIBM.buffer];
@@ -262,7 +254,7 @@ static cgp::mat4 make_mat4(const float* m)
     cgp::mat4 M;
     for(int col=0; col<4; ++col)
         for(int row=0; row<4; ++row)
-            M(row,col) = m[4*col + row];   // CGP stores column-major
+            M(row,col) = m[4*col + row];
     return M;
 }
 

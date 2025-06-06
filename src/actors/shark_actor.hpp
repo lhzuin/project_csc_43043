@@ -11,16 +11,13 @@ struct shark_actor final : public npc_actor {
     float        fin_amplitude     = 0.12f;     ///< fin beat amplitude
     float        body_lag          = 0.40f;     ///< phase lag along spine
     float amplitude_ratio = 0.5f;
-    // 1) How high above the turtle the shark should spawn
+    // How high above the turtle the shark should spawn
     float spawn_distance = 20.0f;
 
-    // 2) How much to reduce spawn_distance each time (per respawn)
-    //    You can tune this so it takes a few seconds or waves to get really close.
-    float spawn_decay_rate = 0.2f;         // units per respawn call
+    //  How much to reduce spawn_distance each time (per respawn)
+    float spawn_decay_rate = 0.2f;
 
-    // 3) The minimum distance (so the shark does not appear inside the turtle)
     float min_spawn_distance = 12.0f;
-
     float target_dist = 5.0f;
     float min_target_dist = 2.0f;
     float target_decay_rate = 0.2f;
@@ -31,8 +28,6 @@ struct shark_actor final : public npc_actor {
 
 
     void start_position(skinned_actor const& target_actor) override;
-
-    //void start_position(skinned_actor const& target_actor, float elapsed_time);
 
     bool check_for_collision(skinned_actor const&  actor) override;
 

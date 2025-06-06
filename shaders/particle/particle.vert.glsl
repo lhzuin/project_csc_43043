@@ -22,12 +22,8 @@ uniform float fall_depth;      // wrap‐around depth
 uniform float swirl_strength;  // swirl intensity
 uniform float time;
 
-// ────── Fog / light (passed to FS) ────────────────────────────────────────
-// (not needed here; FS will recompute camera from view & use the same fog uniforms)
 
-//
 // A quick GLSL “random” based on a float:
-//
 float rand1(in float x) {
     return fract(sin(x * 12.9898) * 43758.5453);
 }
@@ -45,7 +41,7 @@ void main()
     // ─── 1) Per-instance vertical motion (-Y) ──────────────────────────
     float y_offset0 = fall_depth * rand1(instance_seed + 0.789);   // start height
     float y_raw     = y_offset0 + speed * time;                    // runway
-    // wrap so the value stays in [-1, fall_depth -1]
+    // Wrap so the value stays in [-1, fall_depth -1]
     float y_final   = -fract( y_raw / fall_depth ) * fall_depth;  + fall_depth - 1; // ↓↓↓
 
     // ─── 2) Spread in X/Z on disk ────────────────────────────────────────────────
@@ -58,8 +54,8 @@ void main()
     float sa = sin(swirl);
 
     // Rotate the (x,z) vector by ±swirl
-    vec2 XZ = vec2(                       //  <----- this line is the only
-        baseXZ.x * ca - baseXZ.y * sa,    //        thing that changed
+    vec2 XZ = vec2(               
+        baseXZ.x * ca - baseXZ.y * sa,
         baseXZ.x * sa + baseXZ.y * ca);
 
     // ─── 4) Build per‐instance translation matrix T ──────────────────────────────

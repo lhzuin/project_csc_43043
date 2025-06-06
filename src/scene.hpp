@@ -23,9 +23,6 @@ struct gui_parameters {
 // The structure of the custom scene
 struct scene_structure : cgp::scene_inputs_generic {
 
-    // ****************************** //
-    // Elements and shapes of the scene
-    // ****************************** //
     camera_controller_orbit_euler camera_control;
     camera_projection_perspective camera_projection;
     window_structure               window;
@@ -36,23 +33,21 @@ struct scene_structure : cgp::scene_inputs_generic {
     shark_actor  shark_proto;
     angler_actor angler_proto;
 
-    // helper to spawn one shark
     void spawn_npc();
 
-
 	// Collision mechanism
-	bool   game_over   = false;
-    bool   game_started = false;                //to control the main game menu
-    // How quickly the shark’s speed goes up over time (units/sec^2)
-    float speed_increase_rate = 0.09f;
-    // track gameplay time so that respawning doesn’t reset difficulty
-    float gameplay_time = 0.0f;
-    mesh_drawable          global_frame;        // The standard global frame
-    environment_structure  environment;         // Standard environment controller
-    input_devices          inputs;              // Mouse, keyboard, window size…
-    gui_parameters         gui;                 // GUI state
+	bool game_over = false;
+    bool game_started = false;     
 
-    turtle_actor          turtle;
+    float speed_increase_rate = 0.09f;
+
+    float gameplay_time = 0.0f;
+    mesh_drawable  global_frame; // The standard global frame
+    environment_structure environment; // Standard environment controller
+    input_devices inputs; // Mouse, keyboard, window size…
+    gui_parameters gui;
+
+    turtle_actor turtle;
     opengl_shader_structure actor_shader;
     opengl_shader_structure fish_instanced_shader;
 
@@ -60,7 +55,6 @@ struct scene_structure : cgp::scene_inputs_generic {
     fish_actor fish;
 
     timer_basic timer;
-    //Track the high score over the entire game session:
     float high_score = 0.0f;
     float start_time;
     float dt;
@@ -69,20 +63,20 @@ struct scene_structure : cgp::scene_inputs_generic {
     ParticleParameters particle_parameters;
     ParticleSystem   particle_system;
 
-    ImVec2  splash_size  = {0,0}; // original size, kept for later
+    ImVec2  splash_size  = {0,0};
     GLuint  splash_tex   = 0;
 
 
-    float outside_timer = 0.0f;   // how long (in seconds) the turtle has been continuously outside
-    float outside_time_limit = 4.0f;   // “predetermined amount of time” allowed outside before game over
+    float outside_timer = 0.0f;  
+    float outside_time_limit = 4.0f;
 
     cgp::vec3 bubble_center;
     float     bubble_radius = particle_parameters.spread_in;
     bool      warning_issued = false;
-    bool      died_by_drowning = false;   // new: true if turtle ran out of “outside time.”
+    bool      died_by_drowning = false; 
 
 
-    void handle_keyboard_movement();               // poll arrows each frame
+    void handle_keyboard_movement();  // poll arrows each frame
     void loop_initialize();  // called once before the loop
     void initialize();    
     void display_frame(); // called every frame to draw
@@ -91,7 +85,7 @@ struct scene_structure : cgp::scene_inputs_generic {
     void mouse_move_event();
     void mouse_click_event();
     void keyboard_event();
-    void idle_frame();    // called every frame before display_frame()
+    void idle_frame(); 
     void check_turtle_in_current(float dt);
     void display_info();
 };
