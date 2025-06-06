@@ -25,18 +25,20 @@ void shark_actor::initialize(cgp::opengl_shader_structure const& shader,
 
     //just to restart the initial spawn distance between a game over session and a new game session. 
     spawn_distance = 20.0f;
+    target_dist = 5.0f;
+    std::srand(std::time(0));
 }
 
 /**
  * (A) This is the override of the pure‐virtual from npc_actor.
  *     We simply forward to the two‐argument version with elapsed_time = 0.
  *     By providing this, we satisfy the base class’s requirement.
- */
+
 void shark_actor::start_position(skinned_actor const& target_actor) {
     // Forward to the “real” implementation, with elapsed_time = 0.
     start_position(target_actor, 0.0f);
 }
-
+ */
 /**
  * (B) This is our new two‐argument start_position that actually does
  *     the “spawn closer over time” logic.
@@ -44,11 +46,11 @@ void shark_actor::start_position(skinned_actor const& target_actor) {
  *     elapsed_time is currently unused in a simple per‐respawn‐decay approach,
  *     but we keep it in case you want a time‐based decay instead of “per call.”
  */
-void shark_actor::start_position(skinned_actor const& target_actor, float elapsed_time) {
+void shark_actor::start_position(skinned_actor const& target_actor) {
     // 1) Random engines & distributions
     static std::mt19937 engine{ std::random_device{}() };
     std::uniform_real_distribution<float> dist_xz(-5.0f, 5.0f);
-    std::uniform_real_distribution<float> dist_target(-5.0f, 5.0f);
+    std::uniform_real_distribution<float> dist_target(-target_dist, target_dist);
     std::uniform_real_distribution<float> speed_real(2.0f, 8.0f);
 
     // 2) Compute how far above the turtle we spawn this time:
@@ -78,9 +80,15 @@ void shark_actor::start_position(skinned_actor const& target_actor, float elapse
     drawable.model.translation = origin;
 
     // 9) Decay spawn_distance so next call is closer:
-    spawn_distance -= spawn_decay_rate;
+    spawn_distance -= (float)(std::rand()) / (float)(std::rand())*spawn_decay_rate;
     if (spawn_distance < min_spawn_distance) {
         spawn_distance = min_spawn_distance;
+    }
+
+
+    target_dist -= (float)(std::rand()) / (float)(std::rand())*target_decay_rate;
+    if (target_dist < min_target_dist) {
+        target_dist = min_target_dist;
     }
 }
 

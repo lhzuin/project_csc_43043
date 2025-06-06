@@ -16,10 +16,14 @@ struct shark_actor final : public npc_actor {
 
     // 2) How much to reduce spawn_distance each time (per respawn)
     //    You can tune this so it takes a few seconds or waves to get really close.
-    float spawn_decay_rate = 2.0f;         // units per respawn call
+    float spawn_decay_rate = 0.2f;         // units per respawn call
 
     // 3) The minimum distance (so the shark does not appear inside the turtle)
-    float min_spawn_distance = 5.0f;
+    float min_spawn_distance = 12.0f;
+
+    float target_dist = 5.0f;
+    float min_target_dist = 2.0f;
+    float target_decay_rate = 0.2f;
 
     void initialize(cgp::opengl_shader_structure const& shader,
                     std::string const& gltf_file,
@@ -28,7 +32,7 @@ struct shark_actor final : public npc_actor {
 
     void start_position(skinned_actor const& target_actor) override;
 
-    void start_position(skinned_actor const& target_actor, float elapsed_time);
+    //void start_position(skinned_actor const& target_actor, float elapsed_time);
 
     bool check_for_collision(skinned_actor const&  actor) override;
 

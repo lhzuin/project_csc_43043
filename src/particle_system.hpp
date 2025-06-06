@@ -14,7 +14,7 @@ using cgp::numarray;
 struct ParticleParameters{
     int       inst_count = 200000;
     float     speed_in = 1.5f;
-    float     spread_in = 6.0f;
+    float     spread_in = 4.0f;
     float     fall_in = 40.0f;
     float     swirl_in = 0.4f;
     cgp::vec3 color_in = cgp::vec3(0.8f, 0.9f, 1.0f);
