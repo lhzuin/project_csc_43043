@@ -76,7 +76,7 @@ struct scene_structure : cgp::scene_inputs_generic {
     float outside_timer = 0.0f;   // how long (in seconds) the turtle has been continuously outside
     float outside_time_limit = 4.0f;   // “predetermined amount of time” allowed outside before game over
 
-    cgp::vec3 bubble_center = { 0.2f, 0.4f, 0.5f };
+    cgp::vec3 bubble_center;
     float     bubble_radius = particle_parameters.spread_in;
     bool      warning_issued = false;
     bool      died_by_drowning = false;   // new: true if turtle ran out of “outside time.”

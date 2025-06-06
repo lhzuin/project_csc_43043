@@ -77,7 +77,7 @@ void angler_actor::start_position(skinned_actor const& target_actor) {
  */
 void angler_actor::animate(float t)
 {
-    const float w = 2.0f * cgp::Pi * tail_frequency;       // angular speed
+    const float w = 2.0f * cgp::Pi * jaw_frequency;       // angular speed
 
     /* --- (a) tail : travelling wave ------------------------------------- 
     rotate_group("Tail0", {0,0,1},  tail_amplitude * sin( phase(w,t,0.0f) ));
@@ -85,7 +85,7 @@ void angler_actor::animate(float t)
     rotate_group("Tail2", {0,0,1},  tail_amplitude * sin( phase(w,t,1.2f) ));*/
 
     /* --- (b) pectoral fins --------------------------------------------- */
-    float fin = fin_amplitude * sin(w*t + cgp::Pi*0.5f);
+    //float fin = fin_amplitude * sin(w*t + cgp::Pi*0.5f);
     //rotate_group("FinL", {0,1,0},  fin);    // mirror them  
     //rotate_group("FinR", {0,1,0}, -fin);
 

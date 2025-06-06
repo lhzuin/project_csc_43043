@@ -100,6 +100,7 @@ struct ParticleSystem {
     void initialize(environment_structure const& env, std::string const& vert_path,
                     std::string const& frag_path,
                     int                max_insts,
+                    cgp::vec3 bubble_center = { 0.2f, 0.4f, 0.5f },
                     float              sphere_radius_in = 0.008f,
                     int                sector_count    = 8,
                     int                stack_count     = 8);

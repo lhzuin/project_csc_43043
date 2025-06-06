@@ -5,11 +5,11 @@
 
 struct angler_actor final : public npc_actor {
     // ----- internal animation parameters -----
-    float tail_frequency = 0.3f;   // Hz – whole-body beat
-    float tail_amplitude = 0.25f;  // rad
-    float fin_amplitude  = 0.20f;
+    float jaw_frequency = 0.8f;   // Hz – whole-body beat
+    //float tail_amplitude = 0.25f;  // rad
+    //float fin_amplitude  = 0.20f;
     float jaw_amplitude  = 0.00040f;
-    float lamp_amplitude = 0.015f;
+    //float lamp_amplitude = 0.015f;
 
 
     // 1) How high above the turtle the shark should spawn

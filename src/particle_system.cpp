@@ -10,6 +10,7 @@ using namespace cgp;
 void ParticleSystem::initialize(environment_structure  const& env, std::string const& vert_path,
                                 std::string const& frag_path,
                                 int                max_insts,
+                                cgp::vec3 bubble_center,
                                 float              sphere_radius_in,
                                 int                sector_count,
                                 int                stack_count)
@@ -80,6 +81,8 @@ void ParticleSystem::initialize(environment_structure  const& env, std::string c
     glUniform1f(loc_fog_dist,    fog_distance_max);
 
     glUseProgram(0);
+
+    sphere.model.translation = bubble_center;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

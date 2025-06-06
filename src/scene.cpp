@@ -141,7 +141,7 @@ void scene_structure::initialize()
 
     loop_initialize();
 
-    particle_system.initialize(environment, vert_path, frag_path, max_particles);
+    particle_system.initialize(environment, vert_path, frag_path, max_particles, bubble_center);
 
     // Optionally, immediately set your desired parameters
     particle_parameters.fog_col_in = cgp::vec3(environment.background_color);
@@ -380,7 +380,7 @@ void scene_structure::display_frame()
             cgp::mat4 V = environment.camera_view;
             cgp::mat4 P = camera_projection.matrix();
             cgp::vec3 L = environment.light;
-
+            
             particle_system.upload_frame_uniforms(V, P, L, timer.t);
             particle_system.draw();
         }
