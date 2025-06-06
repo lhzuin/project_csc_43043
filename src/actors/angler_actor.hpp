@@ -10,6 +10,22 @@ struct angler_actor final : public npc_actor {
     float fin_amplitude  = 0.20f;
     float jaw_amplitude  = 0.00040f;
     float lamp_amplitude = 0.015f;
+
+
+    // 1) How high above the turtle the shark should spawn
+    float spawn_distance = 20.0f;
+
+    // 2) How much to reduce spawn_distance each time (per respawn)
+    //    You can tune this so it takes a few seconds or waves to get really close.
+    float spawn_decay_rate = 0.2f;         // units per respawn call
+
+    // 3) The minimum distance (so the shark does not appear inside the turtle)
+    float min_spawn_distance = 12.0f;
+
+    float target_dist = 4.0f;
+    float min_target_dist = 1.0f;
+    float target_decay_rate = 0.2f;
+
     cgp::rotation_transform base_rotation;
 
     void initialize(cgp::opengl_shader_structure const& shader,
