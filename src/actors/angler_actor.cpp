@@ -25,26 +25,51 @@ void angler_actor::initialize(cgp::opengl_shader_structure const& shader,
     float s = 1.0f / 40.0f;
     drawable.model.scaling = s;
     base_rotation = cgp::rotation_transform::from_axis_angle({0,0,1},  cgp::Pi);
+
+    target_dist = 4.0f;
+    std::srand(std::time(0));
 }
 auto phase = [](float w, float t, float lag){ return w*t - lag; };
 void angler_actor::start_position(skinned_actor const& target_actor) {
     drawable.model.rotation = base_rotation;
 
-    //random position for its origin and for its speed
+    // 1) Random engines & distributions
     static std::mt19937 engine{ std::random_device{}() };
-    std::uniform_real_distribution<float> dist_real(-5.0f, 5.0f);
-    std::uniform_real_distribution<float> dist_real2(-1.0f, 1.0f);
+    std::uniform_real_distribution<float> dist_xz(-5.0f, 5.0f);
+    std::uniform_real_distribution<float> dist_target(-target_dist, target_dist);
     std::uniform_real_distribution<float> speed_real(2.0f, 8.0f);
-    float rnd_f = dist_real(engine);
-    float rnd_f_target = dist_real(engine);
-    float speed_f = speed_real(engine);
 
-    origin = target_actor.drawable.model.translation + cgp::vec3{ rnd_f, 20.0f, 0.5f };
-    target = target_actor.drawable.model.translation + cgp::vec3{ rnd_f_target, 0.0f, 0.5f };  // desired swim-to point
-    target = 2*target - origin;
-    speed  = speed_f;                // units/sec
+    // 2) Compute how far above the turtle we spawn this time:
+    float current_spawn_dist = std::max(min_spawn_distance, spawn_distance);
+
+    // 3) Random X/Z jitter for origin & target‐bias
+    float rnd_x_shark = dist_xz(engine);
+    float rnd_z_shark = dist_xz(engine);
+    float rnd_x_target = dist_target(engine);
+    float rnd_z_target = dist_target(engine);
+
+    // 4) Turtle’s current position in world space:
+    cgp::vec3 turtle_pos = target_actor.drawable.model.translation;
+
+    // 5) Set the shark’s origin “above” the turtle by current_spawn_dist
+    origin = turtle_pos + cgp::vec3{ rnd_x_shark, current_spawn_dist, rnd_z_shark };
+
+    // 6) Build the swim‐to point (“in front of” turtle + some jitter)
+    target = turtle_pos + cgp::vec3{ rnd_x_target, 0.0f, rnd_z_target };
+    //    Then reflect so that the shark actually moves downward toward that point:
+    target = 2.0f * target - origin;
+    speed = speed_real(engine);                // units/sec
     drawable.model.translation = origin;
-    upload_pose_to_gpu();
+    spawn_distance -= (float)(std::rand()) / (float)(std::rand())*spawn_decay_rate;
+    if (spawn_distance < min_spawn_distance) {
+        spawn_distance = min_spawn_distance;
+    }
+
+
+    target_dist -= (float)(std::rand()) / (float)(std::rand())*target_decay_rate;
+    if (target_dist < min_target_dist) {
+        target_dist = min_target_dist;
+    }
 }
 
 /**
