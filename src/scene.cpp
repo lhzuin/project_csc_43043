@@ -67,6 +67,7 @@ void scene_structure::loop_initialize()
         camera_target,
         { 0.0f, 0.0f, 1.0f }   // 'up' is still Z
     );
+    environment.camera_view = camera_control.camera_model.matrix_view();
     // ───────────────────────────────────────────────────────────────────
     // Reset the “difficulty timer” so shark‐speed starts fresh
     gameplay_time = 0.0f;
@@ -251,14 +252,14 @@ void scene_structure::display_frame()
 
         ImVec2 butPos = { W - butSz.x - margin,  H - butSz.y - margin };
         ImGui::SetCursorPos(butPos);
-
+        ImGui::SetWindowFontScale(2.0f);
         if (ImGui::Button("Play", butSz))
         {
             game_started = true;
             game_over    = false;
             initialize();
         }
-
+        ImGui::SetWindowFontScale(1.0f);
         ImGui::End();
 
         // ─────────────────────────────────────────────────────────────────
@@ -372,6 +373,8 @@ void scene_structure::display_frame()
             camera_target,
             { 0.0f, 0.0f, 1.0f }
         );
+        environment.camera_view = camera_control.camera_model.matrix_view();
+        
         // ─────────────────────────────────────────────────────────────────────────────
         //  WATER‐PARTICLES: upload per-frame uniforms (view, proj, light), then draw:
         // ─────────────────────────────────────────────────────────────────────────────
@@ -441,13 +444,14 @@ void scene_structure::display_frame()
 
         ImGui::SetCursorPosX(button_x);
         ImGui::SetCursorPosY(button_y);
+        ImGui::SetWindowFontScale(1.5f);
         if (ImGui::Button("Play Again", button_size)) {
             // Reset everything for a new playthrough:
             game_over    = false;
             game_started = true;   // already true, but keep for clarity
             loop_initialize();
         }
-
+        ImGui::SetWindowFontScale(1.0f);
         ImGui::End();
     }
 
@@ -529,16 +533,15 @@ void scene_structure::display_gui()
 
 void scene_structure::mouse_move_event()
 {
-    if (!inputs.keyboard.shift)
-        camera_control.action_mouse_move(environment.camera_view);
+    return;
 }
 void scene_structure::mouse_click_event()
 {
-    camera_control.action_mouse_click(environment.camera_view);
+    return;
 }
 void scene_structure::keyboard_event()
 {
-    camera_control.action_keyboard(environment.camera_view);
+    return;
 }
 
 //------------------------------------------------------------------------------
@@ -565,7 +568,7 @@ void scene_structure::handle_keyboard_movement()
 
 void scene_structure::idle_frame()
 {
-    camera_control.idle_frame(environment.camera_view);
+    return;
 }
 
 void scene_structure::display_info()
